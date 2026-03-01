@@ -5,6 +5,7 @@ Monitors clone heartbeats via the shared volume.
 - Shuts down clones idle > IDLE_TIMEOUT_MINUTES.
 - Enforces maximum concurrent clones (MAX_CLONES).
 - Maintains clone_registry.json for visibility.
+Adds a policy watcher that broadcasts A2A alerts to active clones when shared policy files change.
 """
 
 import json
@@ -21,6 +22,48 @@ HEARTBEAT_VOLUME = 'agent_zero_heartbeat'
 HEARTBEAT_DIR = '/hb'
 
 CLONE_REGISTRY = {}
+
+# Policy watcher configuration
+POLICY_FILES = ['/a0/usr/git_policy.md', '/a0/usr/handbook/CLONE_HANDBOOK.md']
+policy_mtimes = {}
+for _f in POLICY_FILES:
+    if os.path.exists(_f):
+        try:
+            policy_mtimes[_f] = os.path.getmtime(_f)
+        except Exception:
+            pass
+
+
+def load_rfc_token():
+    try:
+        with open('/a0/usr/settings.json') as sf:
+            settings = json.load(sf)
+        return settings.get('rfc_password')
+    except Exception:
+        return None
+
+
+def broadcast_policy_alert(changed_files):
+    token = load_rfc_token()
+    if not token:
+        return
+    for cid, info in CLONE_REGISTRY.items():
+        port = info.get('port')
+        if not port:
+            continue
+        url = f'http://localhost:{port}/a2a'
+        payload = {'type': 'policy_alert', 'changed_files': changed_files}
+        try:
+            subprocess.run(
+                ['curl', '-s', '-X', 'POST',
+                 '-H', f'Authorization: Bearer {token}',
+                 '-H', 'Content-Type: application/json',
+                 '-d', json.dumps(payload),
+                 url],
+                timeout=5, capture_output=True
+            )
+        except Exception:
+            pass
 
 
 def list_heartbeat_files():
@@ -123,6 +166,7 @@ def persist_registry():
 
 def main_loop():
     print('[ParentManager] Starting clone monitoring (60s interval)')
+    first_run = True
     while True:
         try:
             update_registry_from_heartbeats()
@@ -131,6 +175,21 @@ def main_loop():
             for cid in get_over_limit_clones():
                 shutdown_clone(cid, f'exceeded max clones ({MAX_CLONES})')
             persist_registry()
+            # Policy watcher: detect changes and broadcast
+            changed = []
+            for f in POLICY_FILES:
+                if os.path.exists(f):
+                    try:
+                        mtime = os.path.getmtime(f)
+                        if first_run or mtime != policy_mtimes.get(f):
+                            changed.append(f)
+                            policy_mtimes[f] = mtime
+                    except Exception:
+                        pass
+            if changed:
+                broadcast_policy_alert(changed)
+                print(f'[ParentManager] Policy change detected: {changed}. Broadcast sent.')
+            first_run = False
         except Exception as e:
             print(f'[ParentManager] Loop error: {e}')
         time.sleep(60)
