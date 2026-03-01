@@ -217,7 +217,22 @@
 
           <div class="field">
             <div class="field-label">
-              <div class="field-title">Auto-memorize replacement threshold</div>
+              <div class="field-title">
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">History Compression</div>
+              <div class="field-description">
+                Disable compression of conversation history to prevent large payloads that may cause 405 errors. May slightly increase token usage.
+              </div>
+            </div>
+            <div class="field-control">
+              <label class="toggle">
+                <input type="checkbox" x-model="$store.settings.settings.features.history_compression" />
+                <span class="toggler"></span>
+              </label>
+            </div>
+          </div>
+Auto-memorize replacement threshold</div>
               <div class="field-description">
                 Only applies when AI consolidation is disabled. Replaces previous similar memories with new ones based on this threshold. 0 = replace even if not similar at all, 1 = replace only if exact match.
               </div>

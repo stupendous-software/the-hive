@@ -117,6 +117,8 @@ class Settings(TypedDict):
     memory_memorize_enabled: bool
     memory_memorize_consolidation: bool
     memory_memorize_replace_threshold: float
+    # Enable/disable history compression logic (summarization/merging)
+    history_compression_enabled: bool
 
     api_keys: dict[str, str]
 

@@ -37,7 +37,17 @@ class TTYSession:
 
     # ── user-facing coroutines ────────────────────────────────────────
     async def start(self):
-        self._buf = asyncio.Queue()
+        # Check if queue is bound to a different event loop
+        current_loop = asyncio.get_running_loop()
+        if hasattr(self, '_buf') and self._buf is not None:
+            try:
+                if hasattr(self._buf, '_loop') and self._buf._loop is not current_loop:
+                    self._buf = asyncio.Queue()
+            except RuntimeError:
+                self._buf = asyncio.Queue()
+        else:
+            self._buf = asyncio.Queue()
+
         if _IS_WIN:
             self._proc = await _spawn_winpty(
                 self.cmd, self.cwd, self.env, self.echo

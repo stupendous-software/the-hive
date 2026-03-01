@@ -1,3 +1,4 @@
+import sys; sys.path.insert(0, "/a0")
 from datetime import timedelta
 import os
 import secrets
@@ -18,6 +19,7 @@ from werkzeug.wrappers.request import Request as WerkzeugRequest
 import initialize
 from python.helpers import files, git, mcp_server, fasta2a_server, settings as settings_helper
 from python.helpers.files import get_abs_path
+from datetime import timedelta
 from python.helpers import runtime, dotenv, process
 from python.helpers.websocket import WebSocketHandler, validate_ws_origin
 from python.helpers.extract_tools import load_classes_from_folder

@@ -82,7 +82,7 @@ class Message(Record):
     def __init__(self, ai: bool, content: MessageContent, tokens: int = 0):
         self.ai = ai
         self.content = content
-        self.summary: str = ""
+        self.summary: str =  ""
         self.tokens: int = tokens or self.calculate_tokens()
 
     def get_tokens(self) -> int:
@@ -131,7 +131,7 @@ class Message(Record):
 class Topic(Record):
     def __init__(self, history: "History"):
         self.history = history
-        self.summary: str = ""
+        self.summary: str =  ""
         self.messages: list[Message] = []
 
     def get_tokens(self):
@@ -201,9 +201,7 @@ class Topic(Record):
         if not compress:
             compress = await self.compress_attention()
         return compress
-
     async def compress_attention(self, ratio: float = CURRENT_TOPIC_ATTENTION_COMPRESSION) -> bool:
-
         middle = len(self.messages) - 2
         if middle < 2:
             return False
@@ -249,7 +247,7 @@ class Topic(Record):
 class Bulk(Record):
     def __init__(self, history: "History"):
         self.history = history
-        self.summary: str = ""
+        self.summary: str =  ""
         self.records: list[Record] = []
 
     def get_tokens(self):
@@ -366,6 +364,11 @@ class History(Record):
         return _json_dumps(data)
 
     async def compress(self):
+        ## Check global setting to disable compression
+        set = settings.get_settings()
+        if not set.get("history_compression_enabled", True):
+            return False
+
         compressed = False
         total = _get_ctx_size_for_history()
         curr, hist, bulk = (
@@ -377,7 +380,9 @@ class History(Record):
             return False
 
         target = total * COMPRESSION_TARGET_RATIO
+        
         prev_total = curr + hist + bulk + 1
+        
         while True:
             curr, hist, bulk = (
                 self.get_current_topic_tokens(),
@@ -388,6 +393,7 @@ class History(Record):
             # safeguard against infinite loop in case LLM bloats the summary for some reason
             if (curr + hist + bulk) >= prev_total:
                 break
+            
             prev_total = curr + hist + bulk
 
             ratios = [
@@ -396,16 +402,19 @@ class History(Record):
                 (bulk, HISTORY_BULK_RATIO, "history_bulk"),
             ]
             ratios = sorted(ratios, key=lambda x: (x[0] / target) / x[1], reverse=True)
+            
             compressed_part = False
             for ratio in ratios:
                 if ratio[0] > ratio[1] * target:
                     over_part = ratio[2]
+                    
                     if over_part == "current_topic":
                         compressed_part = await self.current.compress()
                     elif over_part == "history_topic":
                         compressed_part = await self.compress_topics()
                     else:
                         compressed_part = await self.compress_bulks()
+                    
                     if compressed_part:
                         break
 
@@ -414,10 +423,7 @@ class History(Record):
                 continue
             else:
                 return compressed
-        return compressed
-
     async def compress_topics(self) -> bool:
-
         # 1. first identify large messages and compress them cheaply
         for topic in self.topics:
             if topic.compress_large_messages(HISTORY_TOPIC_RATIO*LARGE_MESSAGE_TO_HISTORY_TOPIC_RATIO):
@@ -475,7 +481,7 @@ def deserialize_history(json_data: str, agent) -> History:
     if json_data:
         data = _json_loads(json_data)
         history = History.from_dict(data, history=history)
-    return history
+        return history
 
 
 def _get_ctx_size_for_history() -> int:
@@ -491,7 +497,7 @@ def _stringify_content(content: MessageContent) -> str:
     # already a string
     if isinstance(content, str):
         return content
-    
+
     # raw messages return preview or trimmed json
     if _is_raw_message(content):
         preview: str = content.get("preview", "") # type: ignore
@@ -501,7 +507,7 @@ def _stringify_content(content: MessageContent) -> str:
         if len(text) > RAW_MESSAGE_OUTPUT_TEXT_TRIM:
             return text[:RAW_MESSAGE_OUTPUT_TEXT_TRIM] + "... TRIMMED"
         return text
-    
+
     # regular messages of non-string are dumped as json
     return _json_dumps(content)
 
@@ -546,7 +552,7 @@ def output_langchain(messages: list[OutputMessage]):
     for m in messages:
         content = _output_content_langchain(content=m["content"])
         if not content or (isinstance(content, str) and not content.strip()):
-            continue # skip empty messages, models 
+            continue # skip empty messages, models
         if m["ai"]:
             result.append(AIMessage(content))  # type: ignore
         else:
