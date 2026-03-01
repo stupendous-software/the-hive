@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clone New Agent — Agent Zero</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --bg: #2d2d2d; --text: #f0e6d2; --accent: #c5def5; --input-bg: #3a3a3a; --border: #555; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 1rem; }
+    h1 { color: var(--accent); }
+    .form-label { color: var(--text); }
+    .form-control, .form-select { background: var(--input-bg); color: var(--text); border: 1px solid var(--border); }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 .25rem rgba(197, 222, 245, .25); }
+    .btn-primary { background: #0366d6; color: #fff; border: none; }
+    .tooltip-inner { background: #1a1a1a; color: #f0e6d2; }
+    .tooltip.bs-tooltip-top .tooltip-arrow::before { border-top-color: #1a1a1a; }
+    .invalid-feedback { color: #ff6b6b; }
+    #parentTooltip { position: absolute; background: #1a1a1a; border: 1px solid #555; padding: .5rem; border-radius: .25rem; display: none; max-width: 300px; z-index: 1000; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧬 Clone New Agent</h1>
+    <form id="cloneForm" novalidate>
+      <div class="row g-3">
+        <!-- Parent -->
+        <div class="col-md-6">
+          <label class="form-label" for="parentSelect">Parent Agent</label>
+          <select class="form-select" id="parentSelect" name="parent_uuid" required>
+            <option value="">Loading…</option>
+          </select>
+          <div class="form-text" id="parentStats"></div>
+          <div class="invalid-feedback">Please select a parent.</div>
+        </div>
+        <!-- Clone Name -->
+        <div class="col-md-6">
+          <label class="form-label" for="cloneName">Clone Name</label>
+          <input type="text" class="form-control" id="cloneName" name="name" placeholder="e.g., Atlas" required>
+          <div class="invalid-feedback">Name required.</div>
+        </div>
+        <!-- Port -->
+        <div class="col-md-4">
+          <label class="form-label" for="port">Host Port (optional)</label>
+          <input type="number" class="form-control" id="port" name="port" min="1024" max="65535" placeholder="auto">
+          <div class="form-text">Leave empty for auto‑assign.</div>
+        </div>
+        <!-- Memory Subdir -->
+        <div class="col-md-4">
+          <label class="form-label" for="memorySubdir">Memory Subdir</label>
+          <input type="text" class="form-control" id="memorySubdir" name="memory_subdir" placeholder="auto if empty">
+        </div>
+        <!-- Project -->
+        <div class="col-md-4">
+          <label class="form-label" for="project">Project</label>
+          <input type="text" class="form-control" id="project" name="project" value="default">
+        </div>
+        <!-- LLM Overrides -->
+        <div class="col-md-6">
+          <label class="form-label" for="llmProvider">LLM Provider (override)</label>
+          <select class="form-select" id="llmProvider" name="llm_override.provider">
+            <option value="">None</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="openrouter">OpenRouter</option>
+            <option value="ollama">Ollama</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="llmModel">LLM Model</label>
+          <input type="text" class="form-control" id="llmModel" name="llm_override.model" placeholder="gpt-4o">
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="llmApiKey">LLM API Key (optional for override)</label>
+          <input type="password" class="form-control" id="llmApiKey" name="llm_override.api_key" placeholder="sk-...">
+        </div>
+        <!-- Resources -->
+        <div class="col-md-4">
+          <label class="form-label" for="cpu">CPU Limit (cores)</label>
+          <input type="number" class="form-control" id="cpu" name="resources.cpu" min="0.1" max="16" step="0.1" value="1">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="memory">Memory Limit (GB)</label>
+          <input type="number" class="form-control" id="memory" name="resources.memory" min="0.5" max="32" step="0.5" value="2">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="pids">PID Limit</label>
+          <input type="number" class="form-control" id="pids" name="resources.pids" min="10" max="1000" value="100">
+        </div>
+        <!-- Tool Whitelist -->
+        <div class="col-12">
+          <label class="form-label" for="toolWhitelist">Tool Whitelist (comma‑separated)</label>
+          <input type="text" class="form-control" id="toolWhitelist" name="tool_whitelist" placeholder="search, memory, terminal">
+        </div>
+        <!-- Network Policy -->
+        <div class="col-md-6">
+          <label class="form-label" for="networkPolicy">Network Policy</label>
+          <select class="form-select" id="networkPolicy" name="network_policy">
+            <option value="none">None</option>
+            <option value="allowlist">Allowlist</option>
+            <option value="denylist">Denylist</option>
+          </select>
+        </div>
+        <!-- Heartbeat -->
+        <div class="col-md-6">
+          <label class="form-label" for="heartbeatInterval">Heartbeat Interval (sec)</label>
+          <input type="number" class="form-control" id="heartbeatInterval" name="heartbeat_interval" min="5" max="300" value="10">
+        </div>
+        <!-- Other toggles -->
+        <div class="col-md-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="autoUpdate" name="auto_update" checked>
+            <label class="form-check-label" for="autoUpdate">Auto‑Update</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="logLevel">Log Level</label>
+          <select class="form-select" id="logLevel" name="log_level">
+            <option value="DEBUG">DEBUG</option>
+            <option value="INFO" selected>INFO</option>
+            <option value="WARNING">WARNING</option>
+            <option value="ERROR">ERROR</option>
+          </select>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn btn-primary">Create Clone</button>
+          <span id="statusMsg" class="ms-3"></span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div id="parentTooltip"></div>
+
+  <script>
+    // Fetch parents and populate dropdown
+    async function loadParents() {
+      try {
+        const res = await fetch('/api/clone/parents');
+        if (!res.ok) throw new Error('Network response was not ok');
+        const parents = await res.json();
+        const select = document.getElementById('parentSelect');
+        select.innerHTML = '<option value="">Select a parent…</option>';
+        parents.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.uuid;
+          opt.textContent = `${p.name} (port ${p.port}) — ${p.current_clones}/${p.max_clones} clones`;
+          opt.dataset.parent = JSON.stringify(p);
+          if (p.current_clones >= p.max_clones) {
+            opt.disabled = true;
+          }
+          // Tooltip on hover
+          opt.addEventListener('mouseenter', () => showTooltip(p, opt));
+          opt.addEventListener('mouseleave', hideTooltip);
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Failed to load parents:', e);
+      }
+    }
+
+    function showTooltip(parent, element) {
+      const tooltip = document.getElementById('parentTooltip');
+      const cloneList = parent.clones.map(c => `${c.name} (port ${c.port}) [${c.status}]`).join('
+');
+      tooltip.innerHTML = `<strong>${parent.name}</strong><br>` +
+        `Clones: ${parent.current_clones} / ${parent.max_clones}<br>` +
+        `<pre style="margin:0;white-space:pre-wrap;">${cloneList || 'No clones yet'}</pre>`;
+      const rect = element.getBoundingClientRect();
+      tooltip.style.left = `${rect.left}px`;
+      tooltip.style.top = `${rect.bottom + 4}px`;
+      tooltip.style.display = 'block';
+    }
+
+    function hideTooltip() {
+      document.getElementById('parentTooltip').style.display = 'none';
+    }
+
+    // Form submission
+    document.getElementById('cloneForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      const status = document.getElementById('statusMsg');
+      status.textContent = 'Creating…';
+      try {
+        const formData = new FormData(e.target);
+        const payload = {};
+        // Build nested object
+        for (const [key, value] of formData.entries()) {
+          if (key.includes('.')) {
+            const [parent, child] = key.split('.');
+            if (!payload[parent]) payload[parent] = {};
+            payload[parent][child] = value;
+          } else {
+            payload[key] = value;
+          }
+        }
+        // Convert numbers
+        if (payload.port) payload.port = parseInt(payload.port, 10);
+        if (payload.resources) {
+          payload.resources.cpu = parseFloat(payload.resources.cpu);
+          payload.resources.memory = parseFloat(payload.resources.memory);
+          payload.resources.pids = parseInt(payload.resources.pids, 10);
+        }
+        if (payload.heartbeatInterval) payload.heartbeat_interval = parseInt(payload.heartbeat_interval, 10);
+        // Booleans
+        payload.auto_update = document.getElementById('autoUpdate').checked;
+        // Arrays from comma‑separated strings
+        if (payload.project) payload.project = payload.project.trim();
+        if (payload.tool_whitelist) payload.tool_whitelist = payload.tool_whitelist.split(',').map(s => s.trim()).filter(Boolean);
+        // Remove empty optional fields
+        ['port', 'memory_subdir', 'llm_override', 'tool_whitelist', 'network_policy'].forEach(k => {
+          if (payload[k] === '' || (typeof payload[k] === 'object' && Object.keys(payload[k]).length === 0)) delete payload[k];
+        });
+
+        const res = await fetch('/api/clone/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          status.textContent = `✅ Clone created! Port: ${data.port}, UUID: ${data.uuid}`;
+          e.target.reset();
+          loadParents(); // refresh counts
+        } else {
+          throw new Error(data.detail || 'Unknown error');
+        }
+      } catch (err) {
+        status.textContent = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Init
+    loadParents();
+  </script>
+</body>
+</html>
