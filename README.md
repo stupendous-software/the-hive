@@ -145,8 +145,6 @@ Original project version history (abbreviated):
 ---
 
 ## 🤝 Community & Support
-
-- [Join our Discord](https://discord.gg/B8KZKNsPpj) for live discussions or [visit our Skool Community](https://www.skool.com/agent-zero).
 - [Follow our YouTube channel](https://www.youtube.com/@AgentZeroFW) for tutorials.
 - [Report Issues](https://github.com/stupendous-software/skynet/issues) for this fork.
 - Upstream: [agent0ai/agent-zero](https://github.com/agent0ai/agent-zero)
