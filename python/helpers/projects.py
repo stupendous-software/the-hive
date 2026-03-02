@@ -12,7 +12,7 @@ PROJECTS_PARENT_DIR = "usr/projects"
 PROJECT_META_DIR = ".a0proj"
 PROJECT_INSTRUCTIONS_DIR = "instructions"
 PROJECT_KNOWLEDGE_DIR = "knowledge"
-PROJECT_HEADER_FILE = "project.json"
+PROJECT_HEADER_FILE = "config.json"
 
 CONTEXT_DATA_KEY_PROJECT = "project"
 

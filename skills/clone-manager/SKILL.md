@@ -8,7 +8,6 @@ tags:
   - a2a
 allowed_tools:
   - code_execution_tool
-  - response
 ---
 # Clone Manager Skill
 

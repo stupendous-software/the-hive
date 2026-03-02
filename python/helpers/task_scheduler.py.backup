@@ -207,52 +207,34 @@ class BaseTask(BaseModel):
     async def on_error(self, error: str):
         # Update task state to ERROR and set last result
         scheduler = TaskScheduler.get()
-        try:
-            await scheduler.reload()  # Ensure we have the latest state
-            updated_task = await scheduler.update_task(
-                self.uuid,
-                state=TaskState.ERROR,
-                last_run=datetime.now(timezone.utc),
-                last_result=f"ERROR: {error}"
+        await scheduler.reload()  # Ensure we have the latest state
+        updated_task = await scheduler.update_task(
+            self.uuid,
+            state=TaskState.ERROR,
+            last_run=datetime.now(timezone.utc),
+            last_result=f"ERROR: {error}"
+        )
+        if not updated_task:
+            PrintStyle.error(
+                f"Failed to update task {self.uuid} state to ERROR after error: {error}"
             )
-            if not updated_task:
-                PrintStyle.error(
-                    f"Failed to update task {self.uuid} state to ERROR after error: {error} - task may have been deleted"
-                )
-        except Exception as e:
-            PrintStyle.error(f"Error during on_error for task {self.uuid}: {e}")
-            raise
-        finally:
-            # Always attempt to save to persist any changes
-            try:
-                await scheduler.save()
-            except Exception as e:
-                PrintStyle.error(f"Failed to save scheduler after on_error for task {self.uuid}: {e}")
+        await scheduler.save()  # Force save after update
 
     async def on_success(self, result: str):
         # Update task state to IDLE and set last result
         scheduler = TaskScheduler.get()
-        try:
-            await scheduler.reload()  # Ensure we have the latest state
-            updated_task = await scheduler.update_task(
-                self.uuid,
-                state=TaskState.IDLE,
-                last_run=datetime.now(timezone.utc),
-                last_result=result
+        await scheduler.reload()  # Ensure we have the latest state
+        updated_task = await scheduler.update_task(
+            self.uuid,
+            state=TaskState.IDLE,
+            last_run=datetime.now(timezone.utc),
+            last_result=result
+        )
+        if not updated_task:
+            PrintStyle.error(
+                f"Failed to update task {self.uuid} state to IDLE after success"
             )
-            if not updated_task:
-                PrintStyle.error(
-                    f"Failed to update task {self.uuid} state to IDLE after success - task may have been deleted"
-                )
-        except Exception as e:
-            PrintStyle.error(f"Error during on_success for task {self.uuid}: {e}")
-            raise
-        finally:
-            # Always attempt to save to persist any changes
-            try:
-                await scheduler.save()
-            except Exception as e:
-                PrintStyle.error(f"Failed to save scheduler after on_success for task {self.uuid}: {e}")
+        await scheduler.save()  # Force save after update
 
 
 class AdHocTask(BaseTask):
@@ -577,10 +559,6 @@ class SchedulerTaskList(BaseModel):
             # Find the task
             task = next((task for task in self.tasks if task.uuid == task_uuid and verify_func(task)), None)
             if task is None:
-                PrintStyle.error(f"Scheduler: Task '{task_uuid}' not found during update (may have been deleted or modified concurrently)")
-                # Debug: list all task UUIDs for diagnostics
-                all_uuids = [t.uuid for t in self.tasks]
-                PrintStyle.info(f"Current tasks in scheduler: {all_uuids}")
                 return None
 
             # Apply the updates via the provided function
