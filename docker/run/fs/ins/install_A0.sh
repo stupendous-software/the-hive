@@ -11,28 +11,19 @@ if [ -z "$1" ]; then
 fi
 BRANCH="$1"
 
-if [ "$BRANCH" = "local" ]; then
-    # For local branch, use the files
-    echo "Using local dev files in /git/agent-zero"
-    # List all files recursively in the target directory
-    # echo "All files in /git/agent-zero (recursive):"
-    # find "/git/agent-zero" -type f | sort
+# If the repository already exists at /git/agent-zero, skip cloning.
+if [ -d "/git/agent-zero" ]; then
+  echo "Repository /git/agent-zero already exists. Skipping clone."
 else
-    # For other branches, clone from GitHub
-    echo "Cloning repository from branch $BRANCH..."
-    git clone -b "$BRANCH" "https://github.com/agent0ai/agent-zero" "/git/agent-zero" || {
-        echo "CRITICAL ERROR: Failed to clone repository. Branch: $BRANCH"
-        exit 1
-    }
+  # Clone from GitHub for the requested branch
+  echo "Cloning repository from branch $BRANCH..."
+  git clone -b "$BRANCH" "https://github.com/agent0ai/agent-zero" "/git/agent-zero" || {
+      echo "CRITICAL ERROR: Failed to clone repository. Branch: $BRANCH"
+      exit 1
+  }
 fi
 
 . "/ins/setup_venv.sh" "$@"
-
-# moved to base image
-# # Ensure the virtual environment and pip setup
-# pip install --upgrade pip ipython requests
-# # Install some packages in specific variants
-# pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining A0 python packages
 uv pip install -r /git/agent-zero/requirements.txt

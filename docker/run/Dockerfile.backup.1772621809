@@ -1,0 +1,27 @@
+FROM agent0ai/agent-zero-base:latest
+
+ARG BRANCH=beta
+ENV BRANCH=$BRANCH
+
+# Copy full Agent Zero source
+COPY ./fs/ /
+
+# Ensure entrypoint script is executable
+RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh
+
+# Run installation scripts with branch argument
+RUN bash /ins/install_A0.sh "$BRANCH"
+RUN bash /ins/install_additional.sh "$BRANCH"
+RUN bash /ins/install_A02.sh "$BRANCH"
+RUN bash /ins/post_install.sh "$BRANCH"
+
+# Expose ports
+EXPOSE 22 80 9000-9009
+
+# Ensure runtime executables are executable
+RUN chmod +x /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh
+
+# Set entrypoint for auto-bootstrap
+ENTRYPOINT ["/a0/usr/scripts/docker-entrypoint.sh"]
+# Use initialize.sh with branch argument; environment already set
+CMD ["/exe/initialize.sh", "$BRANCH"]

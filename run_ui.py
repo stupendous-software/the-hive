@@ -477,6 +477,8 @@ def run():
         routes=[
             Mount("/mcp", app=mcp_server.DynamicMcpProxy.get_instance()),
             Mount("/a2a", app=fasta2a_server.DynamicA2AProxy.get_instance()),
+            Mount("/.well-known", app=fasta2a_server.DynamicA2AProxy.get_instance()),
+            Mount("/.well-known", app=fasta2a_server.DynamicA2AProxy.get_instance()),
             Mount("/", app=wsgi_app),
         ]
     )

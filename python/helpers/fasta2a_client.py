@@ -36,6 +36,13 @@ class AgentConnection:
         if token is None:
             import os
             token = os.getenv("A2A_TOKEN")
+        if not token:
+            try:
+                from python.helpers import settings as settings_helper
+                cfg = settings_helper.get_settings()
+                token = cfg.get("mcp_server_token", "")
+            except Exception:
+                pass
         headers = {}
         if token:
             headers["Authorization"] = f"Bearer {token}"
