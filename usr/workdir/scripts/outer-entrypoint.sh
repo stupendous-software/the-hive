@@ -1,20 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-# Set identity if A0_CLONE_NAME provided
-CLONE_NAME="${A0_CLONE_NAME:-$(hostname)}"
-if [ "$(id -u)" -eq 0 ]; then
-  echo "$CLONE_NAME" > /etc/hostname
-  hostname "$CLONE_NAME" 2>/dev/null || true
-  echo "$CLONE_NAME" > /.identity
-  chmod 644 /.identity
-else
-  echo "outer-entrypoint: Must run as root to set identity" >&2
+# Dynamically substitute the clone name into UI static files at container start
+if [ -n "${A0_CLONE_NAME:-}" ]; then
+  echo "[outer-entrypoint] Applying clone name: ${A0_CLONE_NAME}"
+  if [ -d "/a0/UI" ] || [ -d "/a0/hive-product-page" ]; then
+    find /a0/UI /a0/hive-product-page -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' \) -exec sed -i "s/Agent Zero/${A0_CLONE_NAME}/g" {} \; 2>/dev/null || true
+  fi
 fi
 
-# Execute docker-entrypoint.sh, passing BRANCH if set
-if [ -n "$BRANCH" ]; then
-  exec /a0/usr/scripts/docker-entrypoint.sh "$BRANCH"
-else
-  exec /a0/usr/scripts/docker-entrypoint.sh
-fi
+# Forward to docker-entrypoint (which will handle BRANCH)
+exec /a0/usr/scripts/docker-entrypoint.sh "$@"
