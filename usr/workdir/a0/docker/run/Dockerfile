@@ -23,7 +23,7 @@ ENV PATH=/opt/venv-a0/bin:$PATH
 # Copy entire a0 tree
 COPY ./a0/ /
 
-# Explicitly ensure critical scripts are executable (use binary chmod)
+# Ensure critical scripts are executable (use binary chmod)
 RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/scripts/bootstrap_clone.py] \
  && [/bin/chmod, +x, /a0/usr/scripts/heartbeat_sender.py] \
@@ -31,8 +31,8 @@ RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/common/bootstrap_common.py] \
  && if [ -d /exe ]; then [/bin/chmod, +x, /exe/initialize.sh] \
       [/bin/chmod, +x, /exe/run_A0.sh] \
-      [/bin/chmod, +x, /exe/run_searxng.sh] \
-      [/bin/chmod, +x, /exe/run_tunnel_api.sh] 2>/dev/null || true; fi
+      [/bin/chmod, +x /exe/run_searxng.sh] \
+      [/bin/chmod, +x /exe/run_tunnel_api.sh] 2>/dev/null || true; fi
 
 EXPOSE 22 80 9000-9009
 RUN chown -R agent:agent /app
