@@ -23,7 +23,7 @@ ENV PATH=/opt/venv-a0/bin:$PATH
 # Copy entire a0 tree
 COPY ./a0/ /
 
-# Ensure critical scripts are executable (force after copy)
+# Ensure critical scripts are executable
 RUN chmod 0755 /a0/usr/scripts/docker-entrypoint.sh \
  && chmod +x /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py \
  && if [ -d /exe ]; then chmod +x /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh 2>/dev/null || true; fi
