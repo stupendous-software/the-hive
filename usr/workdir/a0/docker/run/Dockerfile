@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY ./a0/ /
 
-# Ensure critical scripts are executable (binary chmod)
 RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/scripts/bootstrap_clone.py] \
  && [/bin/chmod, +x, /a0/usr/scripts/heartbeat_sender.py] \
