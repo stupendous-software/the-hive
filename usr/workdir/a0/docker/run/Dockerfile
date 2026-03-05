@@ -1,4 +1,4 @@
-ARG CACHE_BUST=20260305T2035
+ARG CACHE_BUST=20260305T2045
 FROM agent0ai/agent-zero:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,9 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY ./a0/ /
 
+# Ensure consistent branch environment
+ENV BRANCH=beta
+
 ENTRYPOINT ["/a0/usr/scripts/docker-entrypoint.sh"]
+CMD ["/exe/initialize.sh", "beta"]
 
 EXPOSE 22 80 9000-9009
 RUN chown -R agent:agent /app 2>/dev/null || true
 USER agent
-# No CMD defined; inherit from base image
