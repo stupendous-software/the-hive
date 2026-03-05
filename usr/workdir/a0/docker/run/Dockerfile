@@ -1,4 +1,4 @@
-ARG CACHE_BUST=20260305T2120
+ARG CACHE_BUST=20260305T2130
 FROM agent0ai/agent-zero:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
