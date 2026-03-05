@@ -3,8 +3,8 @@ FROM agent0ai/agent-zero:latest
 ARG BRANCH=beta
 ENV BRANCH=$BRANCH
 
-# Copy our Agent Zero tree into the container root
-COPY ./a0/ /
+# Copy our Agent Zero tree into the container under /a0/
+COPY ./a0/ /a0/
 
 # Ensure entrypoint and init script are executable
 RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh \
