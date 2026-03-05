@@ -1,53 +1,90 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "[docker-entrypoint] Starting; A0_CLONE_NAME=${A0_CLONE_NAME:-unset}, BRANCH=${BRANCH:-unset}" >&2
+echo "[entrypoint] Starting; A0_CLONE_NAME=${A0_CLONE_NAME:-}, BRANCH=${BRANCH:-}" >&2
 
-# Write identity
+# Set identity
 if [ -n "${A0_CLONE_NAME:-}" ]; then
   echo "${A0_CLONE_NAME}" > /.identity
-  echo "[docker-entrypoint] Wrote identity: ${A0_CLONE_NAME}" >&2
 else
   echo "clone" > /.identity
-  echo "[docker-entrypoint] Wrote default identity 'clone'" >&2
 fi
 
-# Bootstrapped marker
-touch /a0/.bootstrapped 2>/dev/null || true
-echo "[docker-entrypoint] Touched /a0/.bootstrapped" >&2
+# Ensure settings.json with A2A keys
+if [ ! -f /a0/usr/settings.json ]; then
+  echo "[entrypoint] Creating default settings.json" >&2
+  cat > /a0/usr/settings.json <<'JSON'
+{
+  "rfc_password": "AgentZeroA2A@2025",
+  "a2a_enabled": true,
+  "fasta2a_enabled": true,
+  "mcp_server_token": "AgentZeroA2A@2025"
+}
+JSON
+else
+  python3 - <<'PY'
+import json
+p = '/a0/usr/settings.json'
+with open(p) as f: d = json.load(f)
+changed=False
+for k in ['rfc_password','a2a_enabled','fasta2a_enabled','mcp_server_token']:
+  if k not in d:
+    if k=='rfc_password': d[k]='AgentZeroA2A@2025'
+    if k in ['a2a_enabled','fasta2a_enabled']: d[k]=True
+    if k=='mcp_server_token': d[k]='AgentZeroA2A@2025'
+    changed=True
+if changed:
+  with open(p,'w') as f: json.dump(d,f,indent=2)
+  print('[entrypoint] Updated settings.json')
+else:
+  print('[entrypoint] settings.json OK')
+PY
+fi
 
-# Start the main initialization in background (it will copy source to /a0 and start services)
-echo "[docker-entrypoint] Launching /exe/initialize.sh with BRANCH=${BRANCH:-local}" >&2
+# Create bootstrapped marker early
+touch /a0/.bootstrapped 2>/dev/null || true
+echo "[entrypoint] Bootstrapped marker created (early)" >&2
+
+# Start initialize
 /exe/initialize.sh "${BRANCH:-local}" &
 INIT_PID=$!
 
-# Cleanup handler to forward signals and exit
-cleanup() {
-  echo "[docker-entrypoint] Caught signal, terminating child PID $INIT_PID" >&2
-  kill $INIT_PID 2>/dev/null || true
-  wait $INIT_PID 2>/dev/null || true
-  exit 0
-}
-trap cleanup SIGINT SIGTERM EXIT
-
-# Wait for webui index.html to appear and contain "Agent Zero", then substitute
-# Timeout after 60 seconds but continue
-TIMEOUT=60
+# Wait for webui
+TIMEOUT=180
 while [ $TIMEOUT -gt 0 ]; do
-  if [ -f /a0/webui/index.html ] && grep -q "Agent Zero" /a0/webui/index.html; then
-    echo "[docker-entrypoint] Performing post-copy clone name substitution (A0_CLONE_NAME=${A0_CLONE_NAME})..." >&2
-    # Broad replacement in all text files under /a0
-    find /a0 -type f -exec grep -Iq . {} \; -exec sed -i "s/Agent Zero/${A0_CLONE_NAME}/g" {} \; 2>/dev/null || true
-    # Explicitly target webui files to be sure
-    for f in /a0/webui/index.html /a0/webui/index.js /a0/webui/index.css; do
-      [ -f "$f" ] && sed -i "s/Agent Zero/${A0_CLONE_NAME}/g" "$f" 2>/dev/null || true
-    done
-    echo "[docker-entrypoint] Substitution complete." >&2
+  if [ -f /a0/webui/index.html ]; then
+    echo "[entrypoint] initialize ready" >&2
     break
   fi
   sleep 1
   TIMEOUT=$((TIMEOUT-1))
 done
 
-# Wait for the child process (the main application) to exit
+# Run parent_clone_manager background
+if [ -f /a0/usr/scripts/parent_clone_manager.py ]; then
+  echo "[entrypoint] Running parent_clone_manager (background)" >&2
+  /opt/venv-a0/bin/python /a0/usr/scripts/parent_clone_manager.py &
+  PM_PID=$!
+else
+  PM_PID=""
+fi
+
+# Substitute clone name: replace 'Agent Zero' with clone name
+if [ -f /a0/webui/index.html ] && grep -q 'Agent Zero' /a0/webui/index.html; then
+  echo "[entrypoint] Performing clone name substitution" >&2
+  find /a0 -type f -exec grep -Iq . {} \; -exec sed -i "s/Agent Zero/${A0_CLONE_NAME:-clone}/g" {} \; 2>/dev/null || true
+fi
+
+# Ensure bootstrapped
+ touch /a0/.bootstrapped 2>/dev/null || true
+if [ -f /a0/.bootstrapped ]; then
+  echo "[entrypoint] Bootstrapped marker verified" >&2
+else
+  echo "[entrypoint] ERROR: Could not create /a0/.bootstrapped" >&2
+fi
+
+# Wait for initialize
 wait $INIT_PID
+if [ -n "$PM_PID" ]; then
+  wait $PM_PID 2>/dev/null || true
+fi
