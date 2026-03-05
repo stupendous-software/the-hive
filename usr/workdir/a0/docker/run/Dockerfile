@@ -6,12 +6,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./a0/ /
-# COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh
 
 ENV BRANCH=beta
 
-# ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/a0/usr/scripts/docker-entrypoint.sh"]
 CMD ["/exe/initialize.sh", "beta"]
 
 EXPOSE 22 80 9000-9009
