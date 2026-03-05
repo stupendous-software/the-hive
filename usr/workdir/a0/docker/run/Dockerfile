@@ -1,4 +1,3 @@
-# Multi-stage build for the-hive:beta
 ARG CACHE_BUST=20260305
 FROM python:3.11 AS builder
 WORKDIR /build
