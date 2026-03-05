@@ -12,16 +12,19 @@ FROM agent0ai/agent-zero:latest
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash curl libgcc-s1 libstdc++6 openssl ca-certificates tzdata openssh-server \
-    && rm -rf /var/lib/apt/lists/* && useradd -m -u 1000 agent
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m -u 1000 agent
 COPY --from=builder /opt/venv-a0 /opt/venv-a0
 ENV PATH=/opt/venv-a0/bin:$PATH
-# Copy entrypoint with explicit exec permission
+
+# Copy entrypoint with explicit execute permission
 COPY --chmod=0755 a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/docker-entrypoint.sh
-# Copy application files
 COPY a0/ /
-# Ensure required scripts are executable (single RUN layer)
-RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh && \
-    chmod +x /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py /exe/run_A0.sh /exe/initialize.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh
+
+# Double-check and enforce permissions after copy (RUN chmod ensures 755)
+RUN chmod 0755 /a0/usr/scripts/docker-entrypoint.sh && \
+    chmod +x /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh 2>/dev/null || true
+
 EXPOSE 22 80 9000-9009
 RUN chown -R agent:agent /app
 USER agent
