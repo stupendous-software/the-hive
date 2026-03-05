@@ -23,10 +23,7 @@ ENV PATH=/opt/venv-a0/bin:$PATH
 # Copy entire a0 tree
 COPY ./a0/ /
 
-# Ensure script line endings are Unix (in case of CRLF)
-RUN sed -i 's/\r$//' /a0/usr/scripts/docker-entrypoint.sh || true
-
-# Ensure critical scripts are executable (use binary chmod)
+# Explicitly ensure critical scripts are executable (use binary chmod)
 RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/scripts/bootstrap_clone.py] \
  && [/bin/chmod, +x, /a0/usr/scripts/heartbeat_sender.py] \
