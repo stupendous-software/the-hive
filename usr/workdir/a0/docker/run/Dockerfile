@@ -1,4 +1,4 @@
-ARG CACHE_BUST=20260305T1915
+ARG CACHE_BUST=20260305T1920
 ARG BRANCH=beta
 FROM agent0ai/agent-zero:latest
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY ./a0/ /
 
-# Ensure critical scripts are executable
+# Ensure critical scripts are executable (binary chmod)
 RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/scripts/bootstrap_clone.py] \
  && [/bin/chmod, +x, /a0/usr/scripts/heartbeat_sender.py] \
