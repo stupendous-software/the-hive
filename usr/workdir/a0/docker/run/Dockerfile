@@ -1,4 +1,4 @@
-ARG CACHE_BUST=20260305T2130
+ARG CACHE_BUST=20260305T2145
 FROM agent0ai/agent-zero:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./a0/ /
 
 ENV BRANCH=beta
+
+# Ensure entrypoint runs as root
+USER root
 
 ENTRYPOINT ["/a0/usr/scripts/entrypoint-wrapper.sh"]
 CMD ["/exe/initialize.sh", "beta"]
