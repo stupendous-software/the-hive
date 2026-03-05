@@ -5,6 +5,7 @@ set -e
 if [ -n "$A0_CLONE_NAME" ]; then
     hostname "$A0_CLONE_NAME" 2>/dev/null || true
     echo "$A0_CLONE_NAME" > /etc/hostname 2>/dev/null || true
+    echo "$A0_CLONE_NAME" > /.identity
 fi
 
 # Forward BRANCH to initialize.sh
