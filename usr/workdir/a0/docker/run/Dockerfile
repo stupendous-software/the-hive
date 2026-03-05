@@ -1,16 +1,17 @@
-ARG CACHE_BUST=20260305T2300
 FROM agent0ai/agent-zero:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash curl libgcc-s1 libstdc++6 openssl ca-certificates tzdata openssh-server \
-    && rm -rf /var/lib/apt/lists/*
+ARG BRANCH=beta
+ENV BRANCH=$BRANCH
 
+# Copy our Agent Zero tree into the container root
 COPY ./a0/ /
-RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh
 
-ENV BRANCH=beta
+# Ensure entrypoint and init script are executable
+RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh \
+ && chmod +x /exe/initialize.sh
 
+# Auto-bootstrap on first start
 ENTRYPOINT ["/a0/usr/scripts/docker-entrypoint.sh"]
-CMD ["/exe/initialize.sh", "beta"]
+CMD ["/exe/initialize.sh"]
 
 EXPOSE 22 80 9000-9009
