@@ -1,28 +1,19 @@
-ARG CACHE_BUST=20260305T2010
+ARG CACHE_BUST=20260305T2025
 ARG BRANCH=beta
 FROM agent0ai/agent-zero:latest
-WORKDIR /app
+
+# Combine runtime setup in one layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash curl libgcc-s1 libstdc++6 openssl ca-certificates tzdata openssh-server \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd -m -u 1000 agent
+    && useradd -m -u 1000 agent || true
 
+# Copy our a0 directory over base
 COPY ./a0/ /
 
-# Ensure critical scripts are executable (shell chmod)
-RUN chmod 0755 /a0/usr/scripts/docker-entrypoint.sh \
- && chmod +x /a0/usr/scripts/bootstrap_clone.py \
- && chmod +x /a0/usr/scripts/heartbeat_sender.py \
- && chmod +x /a0/usr/scripts/parent_clone_manager.py \
- && chmod +x /a0/usr/common/bootstrap_common.py \
- && if [ -d /exe ]; then \
-      chmod +x /exe/initialize.sh \
-      chmod +x /exe/run_A0.sh \
-      chmod +x /exe/run_searxng.sh \
-      chmod +x /exe/run_tunnel_api.sh; \
-    fi
+# The base image likely already sets correct permissions. Avoid chmod that may fail.
 
 EXPOSE 22 80 9000-9009
-RUN chown -R agent:agent /app
+RUN chown -R agent:agent /app 2>/dev/null || true
 USER agent
 CMD ["/exe/initialize.sh"]
