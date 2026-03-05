@@ -1,4 +1,4 @@
-ARG CACHE_BUST=20260305T1815
+ARG CACHE_BUST=20260305T1820
 ARG BRANCH=beta
 FROM agent0ai/agent-zero:latest
 WORKDIR /app
@@ -7,10 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m -u 1000 agent
 
-# Copy entire a0 tree
 COPY ./a0/ /
 
-# Ensure critical scripts are executable (binary chmod)
+# Ensure scripts executable
 RUN [/bin/chmod, 0755, /a0/usr/scripts/docker-entrypoint.sh] \
  && [/bin/chmod, +x, /a0/usr/scripts/bootstrap_clone.py] \
  && [/bin/chmod, +x, /a0/usr/scripts/heartbeat_sender.py] \
