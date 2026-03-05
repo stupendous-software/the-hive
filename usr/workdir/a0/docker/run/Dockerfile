@@ -6,10 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv /opt/venv-a0
 COPY a0/requirements.txt .
-# Force binary wheels and upgrade pip/setuptools/wheel to avoid build errors on Python 3.11
 ENV PIP_ONLY_BINARY=:all:
 RUN /opt/venv-a0/bin/pip install --no-cache-dir --upgrade pip setuptools wheel
-# Explicitly install scikit-learn with manylinux wheels to prevent Cyton build failures
 RUN /opt/venv-a0/bin/pip install --no-cache-dir "scikit-learn>=1.3.0"
 RUN /opt/venv-a0/bin/pip install --no-cache-dir -r requirements.txt
 
@@ -25,10 +23,7 @@ ENV PATH=/opt/venv-a0/bin:$PATH
 # Copy entire a0 tree first
 COPY ./a0/ /
 
-# Copy entrypoint LAST and explicitly set permissions to avoid overwrite
-COPY --chmod=0755 a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/docker-entrypoint.sh
-
-# Ensure required scripts are executable
+# Ensure required scripts are executable (force after copy)
 RUN chmod 0755 /a0/usr/scripts/docker-entrypoint.sh \
  && chmod +x /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py \
  && if [ -d /exe ]; then chmod +x /exe/initialize.sh /exe/run_A0.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh 2>/dev/null || true; fi
