@@ -9,8 +9,7 @@ COPY a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/bootstrap_clone.py
 COPY a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/heartbeat_sender.py
 COPY a0/usr/common/bootstrap_common.py /a0/usr/common/bootstrap_common.py
 RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/common/bootstrap_common.py /exe/initialize.sh 2>/dev/null || true
-COPY UI /a0/UI
-COPY hive-product-page /a0/hive-product-page
+COPY hive-product-page /a0/hive-product-page/
 COPY a0/docker/run/fs/etc/supervisor/conf.d/ /etc/supervisor/conf.d/
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
 EXPOSE 22 80 9000-9009
