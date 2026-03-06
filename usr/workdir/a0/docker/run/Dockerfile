@@ -15,6 +15,7 @@ COPY a0/usr/common/bootstrap_common.py /a0/usr/common/bootstrap_common.py
 RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py /exe/initialize.sh 2>/dev/null || true
 COPY a0/usr/settings.json /a0/usr/settings.json
 COPY a0/docker/run/fs/etc/supervisor/conf.d/ /etc/supervisor/conf.d/
+COPY a0/usr/scripts/a2a.conf /etc/supervisor/conf.d/
 COPY hive-product-page /a0/hive-product-page/
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
 EXPOSE 22 80 9000-9009
