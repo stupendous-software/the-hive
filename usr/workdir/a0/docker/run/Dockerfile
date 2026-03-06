@@ -2,20 +2,29 @@ ARG CACHE_BUST=20260305T1955
 ARG BRANCH=beta
 FROM agent0ai/agent-zero:latest
 USER root
-# Ensure venv exists and use it to install fasta2a
-RUN apt-get update && apt-get install -y --no-install-recommends python3-pip && rm -rf /var/lib/apt/lists/*
+
+# 1) System setup + Node.js removal in one RUN
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-pip && \
+    apt-get purge -y nodejs npm && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# 2) Python dependency
 RUN /opt/venv-a0/bin/pip install --no-cache-dir fasta2a==0.5.0
+
+# 3) Copy project files (grouped to minimize layers)
+COPY a0/ /a0/
 COPY scripts/outer-entrypoint.sh /usr/local/bin/outer-entrypoint.sh
-RUN chmod +x /usr/local/bin/outer-entrypoint.sh
-COPY a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/docker-entrypoint.sh
-COPY a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/bootstrap_clone.py
-COPY a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/heartbeat_sender.py
-COPY a0/usr/scripts/parent_clone_manager.py /a0/usr/scripts/parent_clone_manager.py
-COPY a0/usr/common/bootstrap_common.py /a0/usr/common/bootstrap_common.py
-RUN chmod +x /a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/parent_clone_manager.py /a0/usr/common/bootstrap_common.py /exe/initialize.sh 2>/dev/null || true
-COPY a0/usr/settings.json /a0/usr/settings.json
-COPY a0/docker/run/fs/etc/supervisor/conf.d/ /etc/supervisor/conf.d/
-COPY a0/usr/scripts/a2a.conf /etc/supervisor/conf.d/
-COPY hive-product-page /a0/hive-product-page/
+
+# 4) Permissions in a single RUN
+RUN chmod +x /usr/local/bin/outer-entrypoint.sh \
+    /a0/usr/scripts/docker-entrypoint.sh \
+    /a0/usr/scripts/bootstrap_clone.py \
+    /a0/usr/scripts/heartbeat_sender.py \
+    /a0/usr/scripts/parent_clone_manager.py \
+    /a0/usr/scripts/a2a.conf \
+    /a0/usr/common/bootstrap_common.py \
+
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
 EXPOSE 22 80 9000-9009

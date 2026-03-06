@@ -1,0 +1,26 @@
+# Exclude build context and temporary files
+.dockerignore.bak_*
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+node_modules/
+.npm/
+
+# Exclude product webpage from repository
+hive-product-page/
+
+# Logs and temporary data
+logs/
+tmp/
+usr/workdir/fs/
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+
+# IDE/editor configs
+.vscode/
+.idea/

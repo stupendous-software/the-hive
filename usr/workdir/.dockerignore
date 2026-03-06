@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.npm/
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs/temp
+*.log
+tmp/
+temp/
+
+# Hive-specific: keep everything else needed for build
+
+# Exclude product webpage from builds
+hive-product-page/

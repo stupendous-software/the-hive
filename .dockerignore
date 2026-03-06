@@ -48,3 +48,4 @@ usr/*
 
 # Environment files anywhere
 *.env
+\n# Exclude product webpage from builds\nhive-product-page/
