@@ -11,6 +11,11 @@ knowledge/custom/**
 logs/*
 tmp/*
 usr/*
+!usr/scripts/
+!usr/scripts/*
+!usr/common/
+!usr/common/*
+!usr/scripts/a2a.conf
 
 
 # Keep .gitkeep markers anywhere

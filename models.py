@@ -1,3 +1,4 @@
+import socket
 from dataclasses import dataclass, field
 from enum import Enum
 import logging
@@ -843,7 +844,7 @@ def _adjust_call_args(provider_name: str, model_name: str, kwargs: dict):
     if provider_name == "openrouter":
         kwargs["extra_headers"] = {
             "HTTP-Referer": "https://agent-zero.ai",
-            "X-Title": "Agent Zero",
+            "X-Title": os.getenv('A0_CLONE_NAME') or socket.gethostname(),
         }
 
     # remap other to openai for litellm

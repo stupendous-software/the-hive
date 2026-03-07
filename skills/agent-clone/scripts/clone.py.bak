@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+import sys, subprocess
+
+port = int(sys.argv[1])
+mem = sys.argv[2]
+
+base_vol = 'hive_data'
+clone_vol = f'hive_clone_{mem}'
+log_vol = f'hive_logs_{mem}'
+tmp_vol = f'hive_tmp_{mem}'
+heartbeat_vol = 'hive_heartbeat'
+name = f'hive-clone-{mem}'
+image = 'brianheston/the-hive:beta'
+
+# Ensure volumes exist
+subprocess.run(['docker','volume','create',clone_vol], capture_output=True)
+subprocess.run(['docker','volume','create',log_vol], capture_output=True)
+subprocess.run(['docker','volume','create',tmp_vol], capture_output=True)
+
+# Copy base data from parent
+copy_cmd = [
+    'docker','run','--rm',
+    '-v',f'{base_vol}:/src:ro',
+    '-v',f'{clone_vol}:/dst',
+    'alpine','sh','-c',
+    'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo "No settings.json"; '
+    'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
+    'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
+    'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
+    'mkdir -p /dst/memory /dst/projects'
+]
+res = subprocess.run(copy_cmd, capture_output=True, text=True)
+if res.returncode != 0:
+    print('Copy failed:', res.stderr)
+    sys.exit(1)
+
+# Launch clone container
+cmd = [
+    'docker','run','-d',
+    '-v','/var/run/docker.sock:/var/run/docker.sock',
+    '-p',f'{port}:80',
+    '-v',f'{base_vol}:/a0:ro',
+    '-v',f'{clone_vol}:/a0/usr',
+    '-v',f'{log_vol}:/a0/logs',
+    '-v',f'{tmp_vol}:/a0/tmp',
+    '-v',f'{heartbeat_vol}:/heartbeat',
+    '-v','hive_secrets:/a0/usr/.secrets',
+    '-e',f'A0_SET_agent_memory_subdir={mem}',
+    '-e',f'A0_CLONE_NAME={mem}',
+    '-e',f'A0_CLONE_PORT={port}',
+    '-e',f'A0_CLONE_MEMORY_SUBDIR={mem}',
+    '-e','A0_PARENT_UUID=unknown',
+    '--name',name,
+    image
+]
+print('Running:',' '.join(cmd))
+res = subprocess.run(cmd, capture_output=True, text=True)
+if res.returncode != 0:
+    print('Launch failed:', res.stderr)
+    sys.exit(1)
+print(f'Clone started: {res.stdout.strip()}')
+print(f'Connect: http://localhost:{port}')
+print('Bootstrap launched.')

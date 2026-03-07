@@ -1,46 +1,57 @@
 ---
 name: agent-clone
-description: Spawn a new Agent Zero instance with the same skills and configuration but with isolated memory and chat storage. Uses Docker to create the new container, copying settings and custom scripts while keeping the memory subdirectory separate.
+description: Spawn a new Hive clone (sub-agent) from the parent agent. Uses the brianheston/the-hive:beta Docker image with proper volume layering and heartbeat coordination. Use when the user requests a new clone or when automatic scaling is needed.
 version: 1.0.0
-author: Agent Zero
+author: Hive Team
 tags:
   - docker
   - deployment
-  - cli
+  - hive
 allowed_tools:
   - code_execution_tool
 ---
 
-# Agent Clone Skill
+# Agent Clone Skill (Hive)
 
-## Overview
-This skill creates a new Agent Zero container that shares your global skills and preferences but maintains separate memory, chats, and project data. It's ideal for testing, scaling, or running parallel agents.
+This skill allows the Hive parent agent to spawn new clone sub-agents automatically. It uses the custom Hive Docker image `brianheston/the-hive:beta` and follows the Hive volume naming conventions.
 
-## Usage
-Execute the clone script with the required port and optional memory subdir:
+## When to Use
 
-```bash
-python scripts/clone.py <port> [memory_subdir]
+- When the user explicitly asks for a new sub-agent or clone.
+- When the system requires additional parallel agents.
+
+## Procedure
+
+1. Choose a unique `clone_name` (alphanumeric and hyphens) for the new clone. This will become its memory subdirectory and container name prefix.
+2. Determine an available host port for the clone's web UI (or let the parent decide a free port).
+3. Execute the clone script via `code_execution_tool`:
+
+```json
+{
+  "tool_name": "code_execution_tool",
+  "tool_args": {
+    "runtime": "terminal",
+    "session": 0,
+    "reset": false,
+    "code": "python /a0/skills/agent-clone/scripts/clone.py <port> <clone_name>"
+  }
+}
 ```
 
-- `<port>`: Host port to expose the new agent's web UI (e.g., `50082`).
-- `[memory_subdir]`: Optional memory subdirectory name (default: `clone`).
+Replace `<port>` and `<clone_name>` with the actual values.
 
-Example:
-```bash
-python scripts/clone.py 50082 test_instance
-```
+4. Wait for the tool response. On success, the clone container will start and begin sending heartbeats to the shared `hive_heartbeat` volume. The parent manager (`parent_clone_manager.py`) will automatically detect and monitor the new clone.
 
-## Implementation Details
-The script performs:
-1. Creates a new host directory `/a0/usr_clone` (or a custom path if advanced parameters are needed).
-2. Copies `/a0/usr/settings.json`, any `secrets.env`, and the entire `/a0/usr/scripts` tree into the new directory.
-3. Creates fresh `memory/` and `projects/` directories to ensure zero overlap.
-4. Starts a new container with Docker, mounting:
-   - Global skills (read-only)
-   - Cloned settings/scripts (read-only)
-   - Fresh `memory/` and `projects/` directories (read-write)
-   - Environment variable `A0_SET_agent_memory_subdir=<memory_subdir>` to ensure isolation.
+## Notes
 
-## Customization
-You can edit `scripts/clone.py` to change the base image, add extra volumes, or enable project sharing.
+- The script uses the following Docker resources:
+  - Image: `brianheston/the-hive:beta`
+  - Base data volume: `hive_data` (read-only)
+  - Clone overlay volume for `/a0/usr`: `hive_clone_<clone_name>`
+  - Logs volume: `hive_logs_<clone_name>`
+  - Temp volume: `hive_tmp_<clone_name>`
+  - Heartbeat volume: `hive_heartbeat`
+  - A2A secret volume: `hive_secrets` (mounted as `/a0/usr/.secrets`)
+- Environment variables set: `A0_CLONE_NAME=<clone_name>`, `A0_CLONE_MEMORY_SUBDIR=<clone_name>`, `A0_CLONE_PORT=<port>`.
+- The parent manager enforces policies: max 5 active clones, idle timeout 15 minutes, and Recoverable state before removal.
+- The parent manager reads policy files `/a0/usr/git_policy.md` and `/a0/usr/handbook/CLONE_HANDBOOK.md` if present and broadcasts changes via A2A.
