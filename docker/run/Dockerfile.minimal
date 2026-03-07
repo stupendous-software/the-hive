@@ -1,0 +1,36 @@
+ARG CACHE_BUST=20260305T1955
+ARG BRANCH=beta
+FROM agent0ai/agent-zero:latest
+USER root
+
+# Single RUN that handles apt, node purge, and cleanup
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-pip && \
+    apt-get purge -y nodejs npm && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install fasta2a
+RUN /opt/venv-a0/bin/pip install --no-cache-dir fasta2a==0.5.0
+
+# Copy all required files and set permissions in a single RUN to create only ONE layer for all files
+RUN cp scripts/outer-entrypoint.sh /usr/local/bin/outer-entrypoint.sh && \
+    cp a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/docker-entrypoint.sh && \
+    cp a0/usr/scripts/bootstrap_clone.py /a0/usr/scripts/bootstrap_clone.py && \
+    cp a0/usr/scripts/heartbeat_sender.py /a0/usr/scripts/heartbeat_sender.py && \
+    cp a0/usr/scripts/parent_clone_manager.py /a0/usr/scripts/parent_clone_manager.py && \
+    cp a0/usr/common/bootstrap_common.py /a0/usr/common/bootstrap_common.py && \
+    cp a0/usr/settings.json /a0/usr/settings.json && \
+    cp -r a0/docker/run/fs/etc/supervisor/conf.d/ /etc/supervisor/conf.d/ && \
+    cp a0/usr/scripts/a2a.conf /etc/supervisor/conf.d/ && \
+    cp -r hive-product-page /a0/hive-product-page/ && \
+    chmod +x /usr/local/bin/outer-entrypoint.sh \
+        /a0/usr/scripts/docker-entrypoint.sh \
+        /a0/usr/scripts/bootstrap_clone.py \
+        /a0/usr/scripts/heartbeat_sender.py \
+        /a0/usr/scripts/parent_clone_manager.py \
+        /a0/usr/common/bootstrap_common.py \
+        /exe/initialize.sh 2>/dev/null || true
+
+ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
+EXPOSE 22 80 9000-9009
