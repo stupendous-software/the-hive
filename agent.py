@@ -378,7 +378,24 @@ class Agent:
         self.intervention: UserMessage | None = None
         self.data: dict[str, Any] = {}  # free data object all the tools can use
 
+
+        # Observability integration
+        if self.config.additional.get('enable_observability', False):
+            import sys as _sys
+            if '/a0/usr/workdir' not in _sys.path:
+                _sys.path.insert(0, '/a0/usr/workdir')
+            try:
+                import observability_extension
+            except Exception as e:
+                print(f'[Observability] Failed to import extension: {e}')
         asyncio.run(self.call_extensions("agent_init"))
+        # Load observability extension if enabled
+        if self.config.additional.get('enable_observability', False):
+            import sys as _sys
+            if '/a0/usr/workdir' not in _sys.path:
+                _sys.path.insert(0, '/a0/usr/workdir')
+            import importlib
+            importlib.import_module('observability_extension')
 
     async def monologue(self):
         error_retries = 0  # counter for critical error retries
@@ -995,15 +1012,30 @@ class Agent:
                 continue
 
         tool_class = classes[0] if classes else Unknown
-        return tool_class(
-            agent=self,
-            name=name,
-            method=method,
-            args=args,
-            message=message,
-            loop_data=loop_data,
-            **kwargs,
-        )
+        if self.config.additional.get('enable_observability', False):
+            from observability.debug import log_tool_call
+            tool = tool_class(
+                agent=self,
+                name=name,
+                method=method,
+                args=args,
+                message=message,
+                loop_data=loop_data,
+                **kwargs,
+            )
+            original_execute = tool.execute
+            tool.execute = log_tool_call(self.context.logger)(original_execute)
+        else:
+            tool = tool_class(
+                agent=self,
+                name=name,
+                method=method,
+                args=args,
+                message=message,
+                loop_data=loop_data,
+                **kwargs,
+            )
+        return tool
 
     async def call_extensions(self, extension_point: str, **kwargs) -> Any:
         return await call_extensions(
