@@ -13,18 +13,15 @@ RUN apt-get update && \
 # 2) Python dependency
 RUN /opt/venv-a0/bin/pip install --no-cache-dir fasta2a==0.5.0
 
-# 3) Copy project files (grouped to minimize layers)
-COPY a0/ /a0/
-COPY scripts/outer-entrypoint.sh /usr/local/bin/outer-entrypoint.sh
+# 3) Copy updated telemetry files (overwrite specific)
+COPY token_telemetry/ /a0/token_telemetry/
+COPY observability_extension.py a0/observability_extension.py
+COPY status_api.py a0/status_api.py
+COPY docs/ a0/docs/
 
-# 4) Permissions in a single RUN
-RUN chmod +x /usr/local/bin/outer-entrypoint.sh \
-    /a0/usr/scripts/docker-entrypoint.sh \
-    /a0/usr/scripts/bootstrap_clone.py \
-    /a0/usr/scripts/heartbeat_sender.py \
-    /a0/usr/scripts/parent_clone_manager.py \
-    /a0/usr/scripts/a2a.conf \
-    /a0/usr/common/bootstrap_common.py \
+# 4) Ensure outer-entrypoint.sh is executable
+COPY scripts/outer-entrypoint.sh /usr/local/bin/outer-entrypoint.sh
+RUN chmod +x /usr/local/bin/outer-entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
 EXPOSE 22 80 9000-9009

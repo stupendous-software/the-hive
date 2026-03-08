@@ -57,7 +57,7 @@ The agent will spawn a subordinate researcher, fetch the data, and remember the 
 3. **Completely Customizable** – Nothing is hard-coded. Change the system prompt, tools, or messages in the `prompts/` folder to reshape behavior.
 4. **Communication is Key** – Instruct your agents in natural language. The terminal UI streams responses in real time; you can intervene anytime.
 
-![Multi-agent architecture](/docs/res/usage/multi-agent.png)
+![Multi-agent architecture](docs/res/usage/multi-agent.png)
 
 ---
 

@@ -1,2 +1,3 @@
 #!/bin/bash
-exec /a0/usr/scripts/docker-entrypoint.sh "$@"
+set -euo pipefail
+exec /a0/usr/scripts/docker-entrypoint.sh
