@@ -1,66 +1,81 @@
 # Agent Zero 🤖
+
+[![GitHub stars](https://img.shields.io/github/stars/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/stargazers)
+[![GitHub watchers](https://img.shields.io/github/watchers/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/watchers)
+[![Discord](https://img.shields.io/discord/1324545646654676000?logo=discord)](https://discord.gg/B8KZKNsPpj)
+[![GitHub commits since latest release](https://img.shields.io/github/commit-activity/m/stupendous-software/the-hive)](https://github.com/stupendous-software/the-hive/pulse)
+
 ![Version](https://img.shields.io/badge/version-0.9.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
-> **The Hive: A personal, organic AI agent that grows with you.**
-
-Agent Zero (The Hive) is a production-ready, multi-agent framework for building autonomous AI assistants that learn, remember, and collaborate. Designed for developers, researchers, and power users, it provides a secure, observable, and extensible platform for deploying AI agents that work for you.
+> **Agent Zero (The Hive)** empowers you to build and deploy **autonomous AI agents** that act as your personal research assistant, developer sidekick, or operations swarm. Imagine an agent that *remembers your preferences*, *orchestrates specialized sub‑agents*, and *gets smarter with every interaction* — all running securely on your own infrastructure.
 
 ---
 
-## ✨ Why Agent Zero?
+## ✨ Why choose Agent Zero?
 
-- **🧠 Persistent Memory** – Agents remember across sessions, with AI-powered recall and consolidation.
-- **👥 Multi-Agent Swarms** – Spawn subordinate agents with dedicated prompts, tools, and roles via `call_subordinate`.
-- **🔧 Extensible Skills System** – Install skills from a marketplace or create your own to extend capabilities.
-- **🛠️ Rich Toolset** – Browser automation, code execution, file handling, webhooks, scheduler, and MCP/A2A protocols.
-- **📊 Real-Time Observability** – Structured logs, metrics, health endpoints, and WebSocket UI for live monitoring.
-- **🔐 Secrets Management** – Credentials are injected securely; agents never expose raw secrets.
-- **🌐 Remote Access** – Built-in tunnel support, WebSocket server, and mobile-friendly UI.
+- **🧠 Persistent Memory** – Your agent recalls past conversations and learns your preferences, so you never repeat yourself.
+- **👥 Multi‑Agent Swarms** – Delegate complex tasks to specialized sub‑agents (researcher, coder, hacker) and get consolidated answers.
+- **🔧 Extensible Skills** – Install community skills or build your own to add new capabilities in minutes.
+- **📊 Real‑Time Observability** – Watch agent behavior with live logs, metrics, and health endpoints (no black‑box AI).
+- **🔐 Secrets Management** – API keys and credentials are injected securely; agents never expose raw secrets.
+- **🌐 Remote Access** – Built‑in tunnel support, WebSocket server, and a mobile‑friendly UI.
 - **📁 Project Isolation** – Multiple projects with separate memory, instructions, and secrets.
-- **🗣️ Speech Integration** – Text-to-Speech (Kokoro) and Speech-to-Text (Whisper) support.
-- **🐳 Docker Native** – One-command Docker deployment with auto-recovery and volume layering.
+- **🗣️ Speech Integration** – Text‑to‑Speech (Kokoro) and Speech‑to‑Text (Whisper) support.
+- **🐳 Docker Native** – One‑command Docker deployment with auto‑recovery and volume layering.
 
 ---
 
-## 🚀 Quick Example
+## 🚀 Get Started in 60 Seconds
 
-Below is a minimal script showing how to create an agent, use tools, and delegate to a subordinate.
+### Prerequisites
+- Docker (recommended) **or** Python 3.11+
+- An LLM provider API key (OpenRouter, OpenAI, Anthropic, etc.)
 
-```python
-from python.api.agents import AgentContext
-from python.helpers import files, log
-
-# 1. Create a context and agent
-ctx = AgentContext(
-    config=None,
-    name="demo",
-    set_current=True
-)
-agent = ctx.agent0
-
-# 2. Run a task (simple query)
-response = agent.run("Calculate 2 + 2 and explain the result.")
-print("Agent response:", response)
-
-# 3. Save something to memory
-agent.memory_save("User prefers concise answers.")
-
-# 4. Spawn a subordinate for a specialized task
-sub_response = agent.call_subordinate(
-    profile="researcher",
-    message="Find the latest AI news and summarize."
-)
-print("Subordinate response:", sub_response)
+### One‑Command Launch
+```bash
+docker run -p 50080:80 \
+  -v a0_data:/a0/usr \
+  -e A0_SET_chat_model_provider=openrouter \
+  -e A0_SET_chat_model_name=openrouter/auto \
+  agent0ai/agent-zero:latest
 ```
+Then open `http://localhost:50080` and say:
+
+> *"Hey Agent, find recent AI news, summarize, and save the links to memory."
+
+The agent will spawn a subordinate researcher, fetch the data, and remember the result for later.
 
 ---
 
-## 📦 Installation
+## 📖 Core Concepts in a Nutshell
+
+1. **Computer as a Tool** – Agent Zero uses your operating system as a tool. It can write code and use the terminal to create and run its own tools on the fly.
+2. **Multi‑Agent Cooperation** – Every agent can spawn subordinates. Superiors delegate subtasks and aggregate results; the chain ends with the human user.
+3. **Completely Customizable** – Nothing is hard‑coded. Change the system prompt, tools, or messages in the `prompts/` folder to reshape behavior.
+4. **Communication is Key** – Instruct your agents in natural language. The terminal UI streams responses in real time; you can intervene anytime.
+
+![Multi-agent architecture](/docs/res/usage/multi-agent.png)
+
+---
+
+## 💡 Real‑World Use Cases
+
+| What you can build | How Agent Zero helps |
+|-------------------|----------------------|
+| Personal research assistant | Automated web search, summarization, memory |
+| Code review bot | Delegates to `coder` subordinate, runs tests, reports results |
+| Ops monitoring | Scheduled checks, alerts, ticket creation |
+| Learning tutor | Adapts explanations to your level over time |
+| Financial analysis | Pull market data, generate charts, correlate events |
+| API integration without code | Learn and remember integrations from snippets |
+
+---
+
+## 🛠️ Installation & Setup
 
 ### Docker (Recommended)
-
 ```bash
 docker run -p 50080:80 \
   -v a0_usr:/a0/usr \
@@ -70,62 +85,22 @@ docker run -p 50080:80 \
   agent0ai/agent-zero:latest
 ```
 
-Then open `http://localhost:50080`.
-
 ### Manual Setup
-
 ```bash
-# Clone
-$ git clone https://github.com/agent0ai/agent-zero.git
-$ cd agent-zero
+# Clone the repository
+git clone https://github.com/agent0ai/agent-zero.git
+cd agent-zero
 
-# Virtual env
-$ python -m venv venv
-$ source venv/bin/activate  # Windows: venv\\Scripts\\activate
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\\Scripts\\activate
 
-# Install
-$ pip install -r a0/requirements.txt
+# Install dependencies
+pip install -r a0/requirements.txt
 
-# Run
-$ python a0/agent.py
+# Run the agent
+python a0/agent.py
 ```
-
----
-
-## 🧭 Core Features in Depth
-
-### Multi-Agent & Subordinates
-- Agent Zero can spawn subordinate agents on-demand with different prompt profiles (e.g., `coder`, `researcher`, `hacker`).
-- Each subordinate has its own memory, tools, and context, enabling parallel task execution.
-- Built-in delegation: the parent agent orchestrates tasks and aggregates results.
-
-### Skills & Extensibility
-- Skills are self-contained packages (following SKILL.md standard) that add new tools, commands, or UI components.
-- Install from the skill marketplace or develop locally.
-- Skills can include scripts, documentation, and prompts.
-
-### Observability & Debugging
-- **Status API**: `GET /status`, `GET /metrics`, `GET /health` expose runtime health.
-- **Structured Logging**: All tool calls and LLM interactions are logged in JSON format.
-- **WebSocket Live Feed**: UI streams logs, messages, and metrics in real-time.
-- **Debug Decorators**: `@log_tool_call`, `@log_llm_prompt` for fine-grained instrumentation.
-
-### Memory & Knowledge
-- AI-powered memory recall: episodic and semantic storage.
-- Consolidation: memories are periodically summarized.
-- Configurable recall intervals and embedding models.
-- Export/import for backup and migration.
-
-### Security & Compliance
-- Secrets management: API keys and credentials stored in a secure volume; agents access them via placeholders.
-- No raw secrets in logs or context.
-- Role-based isolation via projects.
-
-### Connectivity & Protocols
-- **MCP Server/Client**: Agent Zero can act as an MCP server or connect to external MCP servers.
-- **A2A (Agent-to-Agent)**: FastA2A protocol for secure inter-agent communication.
-- **Scheduler & Wait**: Plan tasks, use `wait` tool for delays or timed execution.
-- **Webhooks**: Trigger external actions on events.
 
 ---
 
@@ -144,9 +119,21 @@ Our documentation is structured for quick onboarding and deep dives:
 | Development | [docs/setup/dev-setup.md](./docs/setup/dev-setup.md) |
 | Troubleshooting | [docs/guides/troubleshooting.md](./docs/guides/troubleshooting.md) |
 
+**Docs landing page**: [docs/index.md](./docs/index.md)
+
 ---
 
-## 🤝 Contributing
+## 🤝 Join the Community
+
+- **Discord**: [Join us](https://discord.gg/B8KZKNsPpj) – ask questions, share your agents, and get instant help.
+- **Skool**: [agent-zero.com](https://www.skool.com/agent-zero)
+- **YouTube**: [Channel](https://www.youtube.com/@AgentZeroFW)
+
+> 💬 Have a question or a cool use case? Jump into Discord and show us what you’re building!
+
+---
+
+## 🙌 Contributing
 
 We welcome contributions! Please read our [Contribution Guide](./docs/guides/contribution.md) before submitting PRs.
 
@@ -158,11 +145,10 @@ Key areas:
 
 ---
 
-## 🙏 Community
+## ⚠️ Keep in Mind
 
-- **Discord**: [Join us](https://discord.gg/B8KZKNsPpj)
-- **Skool**: [agent-zero.com](https://www.skool.com/agent-zero)
-- **YouTube**: [Channel](https://www.youtube.com/@AgentZeroFW)
+1. **Agent Zero can be powerful** – With proper instruction, it can perform many actions on your computer. Always run it in an isolated environment (like Docker) and be careful what you ask for.
+2. **Prompt‑based framework** – The entire behavior is defined by prompts in the `prompts/` folder. Change them to dramatically alter functionality.
 
 ---
 
@@ -172,6 +158,6 @@ MIT – see [LICENSE](./LICENSE) for details.
 
 ---
 
-> **Built with modern Python, FastAPI, LangChain LiteLLM, Playwright, and more.**
+> Built with modern Python, FastAPI, LiteLLM, Playwright, and more.
 > 
 > *The agent that grows with you.*
