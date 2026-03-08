@@ -1,61 +1,88 @@
-# Troubleshooting and FAQ
-This page addresses frequently asked questions (FAQ) and provides troubleshooting steps for common issues encountered while using Agent Zero.
+# Troubleshooting
 
-## Frequently Asked Questions
-**1. How do I ask Agent Zero to work directly on my files or dirs?**
-- Place the files/dirs in `/a0/usr`. Agent Zero will be able to perform tasks on them.
+Common issues and solutions for running Agent Zero.
 
-**2. When I input something in the chat, nothing happens. What's wrong?**
-- Check if you have set up API keys in the Settings page. If not, the application cannot call LLM providers.
+## Web UI Not Loading
 
-**3. I get “Invalid model ID.” What does that mean?**
-- Verify the **provider** and **model naming**. For example, `openai/gpt-5.3` is correct for OpenRouter, but **incorrect** for the native OpenAI provider, which goes without prefix.
+**Symptom:** Blank page, connection refused on `localhost:50080`.
 
-**4. Does ChatGPT Plus include API access?**
-- No. ChatGPT Plus does not include API credits. You must provide an OpenAI API key in Settings.
+**Check:**
 
-**5. Where is chat history stored?**
-- Chat history lives at `/a0/usr/chats/` inside the container.
+- Port conflict: change mappings (`-p 50081:80`).
+- Container status: `docker ps` – ensure the container is running.
+- Firewall: allow the Web UI port.
+- If inside Docker, use `docker exec agent-zero curl http://localhost:80` to verify.
 
-**6. How do I integrate open-source models with Agent Zero?**
-Refer to the [Choosing your LLMs](../setup/installation.md#installing-and-using-ollama-local-models) section for configuring local models (Ollama, LM Studio, etc.).
+## Status API Unreachable
 
-> [!TIP]
-> Some LLM providers offer free usage tiers, for example Groq, Mistral, SambaNova, or CometAPI.
+**Symptom:** `GET /health` fails.
 
-**7. How can I make Agent Zero retain memory between sessions?**
-Use **Settings → Backup & Restore** and avoid mapping the entire `/a0` directory. See [How to update Agent Zero](../setup/installation.md#how-to-update-agent-zero).
+**Solutions:**
 
-**8. My browser agent fails or is unreliable. What now?**
-The built-in browser agent is currently unstable on some systems. Use Skills or MCP alternatives such as Browser OS, Chrome DevTools, or Vercel's Agent Browser. See [MCP Setup](mcp-setup.md).
+- Confirm the observability port matches `A0_OBSERVABILITY_PORT`.
+- Test from inside container: `docker exec agent-zero curl http://localhost:8080/health`.
+- Check container logs: `docker logs agent-zero`.
 
-**9. My secrets disappeared after a backup restore.**
-Secrets are stored in `/a0/usr/secrets.env` and are not always included in backup archives. Copy them manually.
+## Agent Crashes on Startup
 
-**10. Where can I find more documentation or tutorials?**
-- Join the Agent Zero [Skool](https://www.skool.com/agent-zero) or [Discord](https://discord.gg/B8KZKNsPpj) community.
+**Possible causes:**
 
-**11. How do I adjust API rate limits?**
-Use the model rate limit fields in Settings (Chat/Utility/Browser model sections) to set request/input/output limits. These map to the model config limits (for example `limit_requests`, `limit_input`, `limit_output`).
+- Invalid `settings.json`. Delete it to regenerate defaults.
+- Missing dependencies (manual setup): `pip install -r a0/requirements.txt`.
+- Permission issues on volumes: ensure the container can write to mounted directories. On Linux, `sudo chown 1000:1000 /path/to/host/dir` or use named volumes.
 
-**12. My `code_execution_tool` doesn't work, what's wrong?**
-- Ensure Docker is installed and running.
-- On macOS, grant Docker Desktop access to your project files.
-- Verify that the Docker image is updated.
+## Memory/RAM Exhaustion
 
-**13. Can Agent Zero interact with external APIs or services (e.g., WhatsApp)?**
-Yes, by creating custom tools or using MCP servers. See [Extensions](../developer/extensions.md) and [MCP Setup](mcp-setup.md).
+**Mitigation:**
 
-## Troubleshooting
+- Increase `memory_recall_interval` to recall less frequently.
+- Reduce embedding model size if using a custom one.
+- Increase host resources or Docker memory limit (`docker run -m 4g ...`).
+- Clean up unused projects and memories.
 
-**Installation**
-- **Docker Issues:** If Docker containers fail to start, consult the Docker documentation and verify your Docker installation and configuration.  On macOS, ensure you've granted Docker access to your project files in Docker Desktop's settings as described in the [Installation guide](../setup/installation.md#4-install-docker-docker-desktop-application). Verify that the Docker image is updated.
-- **Web UI not reachable:** Ensure at least one host port is mapped to container port `80`. If you used `0:80`, check the assigned port in Docker Desktop.
+## LLM Provider Connection Failures
 
-**Usage**
+**Debug:**
 
-- **Terminal commands not executing:** Ensure the Docker container is running and properly configured.  Check SSH settings if applicable. Check if the Docker image is updated by removing it from Docker Desktop app, and subsequently pulling it again.
+- Verify API key is correct and set as environment variable or secret file.
+- Check outbound internet access (for cloud providers).
+- For local providers (Ollama), ensure the URL is correct and the service is running and CORS allows.
+- Look at logs in `a0/logs/` for detailed error messages.
 
-* **Error Messages:** Pay close attention to the error messages displayed in the Web UI or terminal.  They often provide valuable clues for diagnosing the issue. Refer to the specific error message in online searches or community forums for potential solutions.
+## Docker Socket Required Errors
 
-* **Performance Issues:** If Agent Zero is slow or unresponsive, it might be due to resource limitations, network latency, or the complexity of your prompts and tasks, especially when using local models.
+Some features (e.g., Docker-in-Docker) need the host Docker socket. Add:
+
+```bash
+-v /var/run/docker.sock:/var/run/docker.sock
+```
+
+## MCP/A2A Connectivity Issues
+
+- Verify MCP server is enabled in Settings and the port is open.
+- For A2A, ensure the shared secret matches on both ends.
+- Test with `curl` to the endpoints.
+
+## Slow Responses
+
+- Model may be rate-limited; try a different provider or model.
+- Memory recall may be too frequent; increase interval.
+- Code execution in sandbox may be slow; optimize scripts or use a faster runtime.
+
+## Logs Not Streaming in UI
+
+- Refresh the browser and ensure WebSocket connection is established.
+- Check that `a0_status` shows logging is active.
+- Enable debug mode in Settings for more verbose output.
+
+## Post-Upgrade Problems
+
+- Check the Changelog for breaking changes.
+- Use Settings → Backup to restore from a previous backup.
+- Report issues with logs and version info.
+
+## Getting Help
+
+- [Discord](https://discord.gg/B8KZKNsPpj)
+- [Skool](https://www.skool.com/agent-zero)
+- [GitHub Issues](https://github.com/agent0ai/agent-zero/issues)

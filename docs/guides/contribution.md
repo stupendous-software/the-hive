@@ -1,31 +1,63 @@
-# Contributing to Agent Zero
+# Contributing Guide
 
-Contributions to improve Agent Zero are very welcome!  This guide outlines how to contribute code, documentation, or other improvements.
+We welcome contributions to Agent Zero! This guide helps you get started.
 
-## Getting Started
+## Quick Start
 
-- See [development](development.md) for instructions on how to set up a development environment.
-- See [extensions](../developer/extensions.md) for instructions on how to create custom extensions.
-- See [websocket infrastructure](websocket-infrastructure.md) for guidance on building real-time handlers and client integrations.
+1. Fork the repository on GitHub.
+2. Clone your fork locally.
+3. Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r a0/requirements.txt
+   pip install -r a0/requirements-dev.txt  # if present
+   ```
+4. Install pre-commit hooks (optional):
+   ```bash
+   pre-commit install
+   ```
 
-1. **Fork the Repository:** Fork the Agent Zero repository on GitHub.
-2. **Clone Your Fork:** Clone your forked repository to your local machine.
-3. **Create a Branch:** Create a new branch for your changes. Use a descriptive name that reflects the purpose of your contribution (e.g., `fix-memory-leak`, `add-search-tool`, `improve-docs`).
+## Workflow
 
-## Making Changes
+- `git checkout -b feature/AmazingFeature`
+- Make changes and write/add tests.
+- Run tests: `pytest tests/`
+- Format code: `black . && isort .`
+- Commit with clear message: `git commit -m "Add AmazingFeature"`
+- Push and open a Pull Request.
 
-* **Code Style:** Follow the existing code style. Agent Zero generally follows PEP 8 conventions.
-* **Documentation:**  Update the documentation if your changes affect user-facing functionality. The documentation is written in Markdown.
-* **Commit Messages:**  Write clear and concise commit messages that explain the purpose of your changes.
+## Code Style
 
-## Submitting a Pull Request
+PEP 8 compliant. Use Black and isort.
 
-1. **Push Your Branch:** Push your branch to your forked repository on GitHub.
-2. **Create a Pull Request:** Create a pull request from your branch to the appropriate branch in the main Agent Zero repository.
-   * Target the `development` branch.
-3. **Provide Details:** In your pull request description, clearly explain the purpose and scope of your changes. Include relevant context, test results, and any other information that might be helpful for reviewers.
-4. **Address Feedback:**  Be responsive to feedback from the community. We love changes, but we also love to discuss them!
+## Testing
 
-## Documentation Stack
+- Unit tests in `tests/`.
+- For new tools, include unit and integration tests.
+- Screenshots or logs are helpful for UI changes.
 
-- The documentation is built using Markdown. We appreciate your contributions even if you don't know Markdown, and look forward to improve Agent Zero for everyone's benefit.
+## Documentation
+
+- Update relevant files in `docs/`.
+- Add docstrings to public functions/classes.
+- Readme updates for major features.
+
+## Areas We Need Help With
+
+- New skills and tool integrations
+- Performance optimizations
+- Security hardening
+- Translations and localization
+- Better error messages and diagnostics
+- Observability enhancements
+
+## Community
+
+Join our Discord for dev chat and support.
+
+## License
+
+Contributions are licensed under the MIT License.
+
+Thank you for making Agent Zero better! 🚀

@@ -1,5 +1,7 @@
 #!/bin/bash
 set -euo pipefail
+export OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318/v1/traces}
+export OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-agent-zero}
 echo "[entrypoint] Starting; A0_CLONE_NAME=${A0_CLONE_NAME:-}, BRANCH=${BRANCH:-}" >&2
 # Set identity
 if [ -n "${A0_CLONE_NAME:-}" ]; then
