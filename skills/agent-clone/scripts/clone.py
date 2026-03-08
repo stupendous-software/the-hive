@@ -14,10 +14,7 @@ heartbeat_vol = 'hive_heartbeat'
 name = f'hive-clone-{mem}'
 image = 'brianheston/the-hive:beta'
 
-# ==================== NETWORK DETECTION FIX ====================
 def get_parent_network():
-    """Detect the Docker network the parent container is connected to.
-    Returns network name or None if detection fails."""
     try:
         container_id = None
         with open('/proc/self/cgroup', 'r') as f:
@@ -47,7 +44,7 @@ def get_parent_network():
             print('WARNING: Only default bridge network available, using it')
             return 'bridge'
         else:
-            print('WARNING: No suitable network found for inter-container communication')
+            print('WARNING: No suitable network found')
             return None
     except subprocess.CalledProcessError as e:
         print(f'WARNING: Docker command failed: {e.stderr if e.stderr else e}')
@@ -55,14 +52,11 @@ def get_parent_network():
     except Exception as e:
         print(f'WARNING: Network detection error: {e}')
         return None
-# ==================================================================
 
-# Ensure volumes exist
 subprocess.run(['docker','volume','create',clone_vol], capture_output=True)
 subprocess.run(['docker','volume','create',log_vol], capture_output=True)
 subprocess.run(['docker','volume','create',tmp_vol], capture_output=True)
 
-# Copy base data from parent
 copy_cmd = [
     'docker','run','--rm',
     '-v',f'{base_vol}:/src:ro',
@@ -79,7 +73,6 @@ if res.returncode != 0:
     print('Copy failed:', res.stderr)
     sys.exit(1)
 
-# Build docker run command
 cmd = [
     'docker','run','-d',
     '-v','/var/run/docker.sock:/var/run/docker.sock',
@@ -99,20 +92,18 @@ cmd = [
     image
 ]
 
-# Inject observability environment if available
+# Inject observability environment
 if parent_obs_url:
     cmd.extend(['-e', f'A0_PARENT_OBS_URL={parent_obs_url}'])
 if trace_id:
     cmd.extend(['-e', f'A0_TRACE_ID={trace_id}'])
 
-# ==================== NETWORK FLAG INJECTION ====================
 network = get_parent_network()
 if network:
     cmd.insert(3, '--network')
     cmd.insert(4, network)
-# ==================================================================
 
-# Inject A2A server configuration for parent-to-clone connectivity
+# Inject A2A server configuration
 try:
     with open('/a0/usr/settings.json') as f:
         parent_settings = json.load(f)

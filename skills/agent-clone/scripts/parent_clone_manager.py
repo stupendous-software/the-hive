@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Parent Clone Manager
-
-Monitors clone heartbeats via the shared volume.
-- Shuts down clones idle > IDLE_TIMEOUT_MINUTES.
-- Enforces maximum concurrent clones (MAX_CLONES).
-- Maintains clone_registry.json for visibility.
-Adds a policy watcher that broadcasts A2A alerts to active clones when shared policy files change.
-"""
-
 import json
 import os
 import time
@@ -16,7 +7,6 @@ import socket
 import uuid
 from datetime import datetime, timezone, timedelta
 
-# Configuration
 MAX_CLONES = 5
 IDLE_TIMEOUT_MINUTES = 15
 REGISTRY_PATH = '/a0/usr/clone_registry.json'
@@ -25,7 +15,6 @@ HEARTBEAT_DIR = '/hb'
 
 CLONE_REGISTRY = {}
 
-# Policy watcher configuration
 POLICY_FILES = ['/a0/usr/git_policy.md', '/a0/usr/handbook/CLONE_HANDBOOK.md']
 policy_mtimes = {}
 for _f in POLICY_FILES:
@@ -35,7 +24,6 @@ for _f in POLICY_FILES:
         except Exception:
             pass
 
-
 def load_rfc_token():
     try:
         with open('/a0/usr/settings.json') as sf:
@@ -43,7 +31,6 @@ def load_rfc_token():
         return settings.get('rfc_password')
     except Exception:
         return None
-
 
 def broadcast_policy_alert(changed_files):
     token = load_rfc_token()
@@ -67,9 +54,7 @@ def broadcast_policy_alert(changed_files):
         except Exception:
             pass
 
-
 def list_heartbeat_files():
-    """Return list of heartbeat file names from the shared volume."""
     try:
         result = subprocess.run(
             ['docker', 'run', '--rm', '-v', f'{HEARTBEAT_VOLUME}:{HEARTBEAT_DIR}', 'alpine', 'ls', '-1', f'{HEARTBEAT_DIR}/heartbeat_*.json'],
@@ -83,7 +68,6 @@ def list_heartbeat_files():
 
 
 def read_heartbeat_file(fname: str):
-    """Read a single heartbeat JSON file from the volume and return data dict."""
     try:
         result = subprocess.run(
             ['docker', 'run', '--rm', '-v', f'{HEARTBEAT_VOLUME}:{HEARTBEAT_DIR}', 'alpine', 'cat', f'{HEARTBEAT_DIR}/{fname}'],
@@ -116,7 +100,6 @@ def update_registry_from_heartbeats():
 
 
 def get_idle_clones():
-    """Return list of container IDs idle longer than IDLE_TIMEOUT_MINUTES."""
     idle = []
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=IDLE_TIMEOUT_MINUTES)
     for cid, info in CLONE_REGISTRY.items():
@@ -124,7 +107,6 @@ def get_idle_clones():
         if not ts_str:
             continue
         try:
-            # Handle ISO format with trailing Z
             if ts_str.endswith('Z'):
                 ts_str = ts_str[:-1] + '+00:00'
             last_dt = datetime.fromisoformat(ts_str)
@@ -136,7 +118,6 @@ def get_idle_clones():
 
 
 def get_over_limit_clones():
-    """Return list of container IDs to remove if over MAX_CLONES (oldest first)."""
     if len(CLONE_REGISTRY) <= MAX_CLONES:
         return []
     sorted_ids = sorted(
@@ -148,7 +129,6 @@ def get_over_limit_clones():
 
 
 def shutdown_clone(container_id: str, reason: str):
-    """Stop and remove the clone container."""
     try:
         name = CLONE_REGISTRY.get(container_id, {}).get('name', container_id)
         print(f'[ParentManager] Shutting down clone {name} ({container_id[:12]}): {reason}')
@@ -177,7 +157,6 @@ def main_loop():
             for cid in get_over_limit_clones():
                 shutdown_clone(cid, f'exceeded max clones ({MAX_CLONES})')
             persist_registry()
-            # Policy watcher: detect changes and broadcast
             changed = []
             for f in POLICY_FILES:
                 if os.path.exists(f):
