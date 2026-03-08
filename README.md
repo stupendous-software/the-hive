@@ -2,7 +2,6 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/stargazers)
 [![GitHub watchers](https://img.shields.io/github/watchers/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/watchers)
-[![Discord](https://img.shields.io/discord/1324545646654676000?logo=discord)](https://discord.gg/B8KZKNsPpj)
 [![GitHub commits since latest release](https://img.shields.io/github/commit-activity/m/stupendous-software/the-hive)](https://github.com/stupendous-software/the-hive/pulse)
 
 ![Version](https://img.shields.io/badge/version-0.9.8+-blue.svg)
@@ -55,7 +54,7 @@ The agent will spawn a subordinate researcher, fetch the data, and remember the 
 
 1. **Computer as a Tool** – Agent Zero uses your operating system as a tool. It can write code and use the terminal to create and run its own tools on the fly.
 2. **Multi‑Agent Cooperation** – Every agent can spawn subordinates. Superiors delegate subtasks and aggregate results; the chain ends with the human user.
-3. **Completely Customizable** – Nothing is hard‑coded. Change the system prompt, tools, or messages in the `prompts/` folder to reshape behavior.
+3. **Completely Customizable** – Nothing is hard-coded. Change the system prompt, tools, or messages in the `prompts/` folder to reshape behavior.
 4. **Communication is Key** – Instruct your agents in natural language. The terminal UI streams responses in real time; you can intervene anytime.
 
 ![Multi-agent architecture](/docs/res/usage/multi-agent.png)
@@ -123,16 +122,6 @@ Our documentation is structured for quick onboarding and deep dives:
 | Troubleshooting | [docs/guides/troubleshooting.md](./docs/guides/troubleshooting.md) |
 
 **Docs landing page**: [docs/index.md](./docs/index.md)
-
----
-
-## 🤝 Join the Community
-
-- **Discord**: [Join us](https://discord.gg/B8KZKNsPpj) – ask questions, share your agents, and get instant help.
-- **Skool**: [agent-zero.com](https://www.skool.com/agent-zero)
-- **YouTube**: [Channel](https://www.youtube.com/@AgentZeroFW)
-
-> 💬 Have a question or a cool use case? Jump into Discord and show us what you’re building!
 
 ---
 
