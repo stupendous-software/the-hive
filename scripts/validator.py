@@ -16,6 +16,13 @@ class LinkParser(HTMLParser):
             for attr, value in attrs:
                 if attr in ('href', 'src') and value:
                     absolute_url = urllib.parse.urljoin(self.base_url, value)
+                    # Ignore localhost references
+                    parsed = urllib.parse.urlparse(absolute_url)
+                    if parsed.hostname in ('localhost', '127.0.0.1', '::1'):
+                        continue
+                    # Ignore shields.io badges (they often return 403 to HEAD)
+                    if 'img.shields.io' in parsed.netloc:
+                        continue
                     self.urls.append(absolute_url)
 
 def check_url(url):
@@ -31,7 +38,7 @@ def push_ntfy(title, message):
     if not topic:
         print('[NTFY] No topic set, skipping push', file=sys.stderr)
         return
-    server = os.getenv('NTFY_SERVER_URL', 'https://ntfy.sh')
+    server = os.getenv('NTFY_SERVER_URL', 'https://ntfy.ibuilt.one')
     url = f"{server.rstrip('/')}/{topic}"
     data = message.encode('utf-8')
     headers = {'Title': title.encode('utf-8')}
@@ -63,8 +70,6 @@ def main():
     print(f'Found {len(urls)} unique links to check on {base_url}')
     broken = []
     for url in urls:
-        if not url.startswith('http'):
-            continue
         status = check_url(url)
         if isinstance(status, str) or status >= 400:
             broken.append((url, status))
