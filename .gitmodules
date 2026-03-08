@@ -1,6 +1,3 @@
-[submodule "usr/ecosystem"]
-	path = usr/ecosystem
-	url = https://github.com/stupendous-software/ecosystem.git
 [submodule "usr/workdir/hive-product-page"]
 	path = usr/workdir/hive-product-page
 	url = https://github.com/stupendous-software/hive-mind.git

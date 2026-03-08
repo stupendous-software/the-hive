@@ -118,6 +118,19 @@ if network:
     cmd.insert(4, network)
 # ==================================================================
 
+    # Inject A2A server configuration for parent-to-clone connectivity
+    try:
+        with open('/a0/usr/settings.json') as f:
+            parent_settings = json.load(f)
+        a2a_secret = parent_settings.get('a2a_secret')
+        if a2a_secret:
+            cmd.extend(['-e', 'A0_SET_a2a_server_enabled=true'])
+            cmd.extend(['-e', 'A0_SET_a2a_http_url=http://0.0.0.0:8000/a2a'])
+            cmd.extend(['-e', f'A0_SET_a2a_secret={a2a_secret}'])
+        else:
+            print('WARNING: a2a_secret not found in parent settings; A2A will not be enabled on clone')
+    except Exception as e:
+        print(f'WARNING: Could not load parent A2A settings: {e}')
 print('Running:',' '.join(cmd))
 res = subprocess.run(cmd, capture_output=True, text=True)
 if res.returncode != 0:
