@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60">
+  <!-- Bee body -->
+  <ellipse cx="35" cy="30" rx="18" ry="12" fill="#f59e0b" />
+  <ellipse cx="35" cy="30" rx="12" ry="8" fill="#fbbf24" />
+  <!-- Stripes -->
+  <path d="M23,30 Q35,20 47,30" stroke="#92400e" fill="none" stroke-width="2" />
+  <path d="M27,30 Q35,25 43,30" stroke="#92400e" fill="none" stroke-width="2" />
+  <!-- Wings -->
+  <ellipse cx="25" cy="22" rx="10" ry="5" fill="#e2e8f0" opacity="0.8" />
+  <!-- Hive (hexagon) behind bee -->
+  <polygon points="85,5 100,15 100,45 85,55 70,45 70,15" fill="#a78bfa" opacity="0.3" />
+  <!-- Text -->
+  <text x="60" y="58" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#6366f1">The Hive</text>
+</svg>
