@@ -1,17 +1,34 @@
 ---
-title: Agent Zero (The Hive)
+title: The Hive - An Agent Zero Extension
+search: false
 ---
 
-# ![Agent Zero Logo](res/the-hive-logo.png) Agent Zero (The Hive)
+# The Hive 🤖
 
-Welcome to the official documentation for **Agent Zero**, the enterprise swarm framework built on The Hive extension.
+## 🌐 Project Links
 
-<div style="display: flex; align-items: center; justify-content: center; margin: 2rem 0;">
-  <img src="res/stupendous-software-logo.png" alt="Stupendous Software" style="height: 60px; margin-right: 2rem;" />
-  <img src="res/the-hive-logo.png" alt="The Hive" style="height: 60px; margin-left: 2rem;" />
-</div>
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/stupendous-software/the-hive)
+[![DockerHub](https://img.shields.io/badge/DockerHub-Image-blue?logo=docker)](https://hub.docker.com/r/brianheston/the-hive)
 
-Use the navigation to explore setup, usage, development, and guides.
+## ⚙️ Low Hardware Requirements
 
----
-*Built by Stupendous Software • Powered by The Hive* 
+- **No GPU required** - runs on standard CPU hardware
+- Minimal resource footprint (512MB RAM, 1 CPU core)
+- Perfect for laptops, Raspberry Pi, and edge devices
+
+## 🆚 Framework Comparison
+
+| Feature | Classic Agent Zero | Agent Zero + Hive | Other Frameworks |
+|---------|-------------------|------------------|-----------------|
+| Multi-agent | ✅ Basic | ✅ **Advanced** (hierarchical trees) | ❌ Limited |
+| Observability | ❌ | ✅ **Full metrics & audit trail** | ⚠️ Partial |
+| Hardware | Medium | **Low** (no GPU) | High |
+| Deployment | Manual | **One-click Docker** | Complex |
+| Community | Growing | 🚀 **Rapidly expanding** | Varies |
+
+## 💡 Real-World Use Cases
+
+- **Enterprise automation** (safety-focused with HITL)
+- **Research computing grids** (batch processing)
+- **DevOps agent swarms** (infrastructure automation)
+- **Customer service** (with policy compliance)
