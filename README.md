@@ -1,4 +1,4 @@
-# Agent Zero 🤖
+# The Hive – An Agent Zero Extension 🤖
 
 [![GitHub stars](https://img.shields.io/github/stars/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/stargazers)
 [![GitHub watchers](https://img.shields.io/github/watchers/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/watchers)
@@ -9,11 +9,11 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
-> **Agent Zero (The Hive)** empowers you to build and deploy **autonomous AI agents** that act as your personal research assistant, developer sidekick, or operations swarm. Imagine an agent that *remembers your preferences*, *orchestrates specialized sub‑agents*, and *gets smarter with every interaction* — all running securely on your own infrastructure.
+> **The Hive** extends **Agent Zero** with advanced multi‑agent swarms, persistent memory, and observability. It’s a production‑ready platform for building autonomous AI assistants that remember, collaborate, and grow with you.
 
 ---
 
-## ✨ Why choose Agent Zero?
+## ✨ Why choose The Hive?
 
 - **🧠 Persistent Memory** – Your agent recalls past conversations and learns your preferences, so you never repeat yourself.
 - **👥 Multi‑Agent Swarms** – Delegate complex tasks to specialized sub‑agents (researcher, coder, hacker) and get consolidated answers.
@@ -37,6 +37,8 @@
 ```bash
 docker run -p 50080:80 \
   -v a0_data:/a0/usr \
+  -v a0_logs:/a0/logs \
+  -v a0_tmp:/a0/tmp \
   -e A0_SET_chat_model_provider=openrouter \
   -e A0_SET_chat_model_name=openrouter/auto \
   agent0ai/agent-zero:latest
@@ -62,8 +64,8 @@ The agent will spawn a subordinate researcher, fetch the data, and remember the 
 
 ## 💡 Real‑World Use Cases
 
-| What you can build | How Agent Zero helps |
-|-------------------|----------------------|
+| What you can build | How The Hive helps |
+|-------------------|-------------------|
 | Personal research assistant | Automated web search, summarization, memory |
 | Code review bot | Delegates to `coder` subordinate, runs tests, reports results |
 | Ops monitoring | Scheduled checks, alerts, ticket creation |
@@ -78,8 +80,9 @@ The agent will spawn a subordinate researcher, fetch the data, and remember the 
 ### Docker (Recommended)
 ```bash
 docker run -p 50080:80 \
-  -v a0_usr:/a0/usr \
+  -v a0_data:/a0/usr \
   -v a0_logs:/a0/logs \
+  -v a0_tmp:/a0/tmp \
   -e A0_SET_chat_model_provider=openrouter \
   -e A0_SET_chat_model_name=openrouter/auto \
   agent0ai/agent-zero:latest
@@ -147,7 +150,7 @@ Key areas:
 
 ## ⚠️ Keep in Mind
 
-1. **Agent Zero can be powerful** – With proper instruction, it can perform many actions on your computer. Always run it in an isolated environment (like Docker) and be careful what you ask for.
+1. **The Hive can be powerful** – With proper instruction, it can perform many actions on your computer. Always run it in an isolated environment (like Docker) and be careful what you ask for.
 2. **Prompt‑based framework** – The entire behavior is defined by prompts in the `prompts/` folder. Change them to dramatically alter functionality.
 
 ---
