@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, '/a0')
+sys.path.insert(0, '/a0/usr/workdir')
 import os
 import json
 import threading
@@ -11,15 +12,18 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, PlainTextResponse
 import psutil
 from observability import get_agent_status, MetricsCollector
+from token_telemetry import token_counter
 
 app = FastAPI()
 clone_metrics: Dict[str, Dict[str, Any]] = {}
+clone_token_metrics: Dict[str, Dict[str, Any]] = {}  # stores {'counters': {...}, 'costs': {...}}
 traces_store: Dict[str, List[Dict[str, Any]]] = {}
 trace_ttl_seconds = 300
 log_buffer: deque = deque(maxlen=1000)
 log_websockets: List[WebSocket] = []
 clone_metrics_lock = threading.Lock()
 traces_lock = threading.Lock()
+clone_token_lock = threading.Lock()
 
 @app.get('/health')
 def health():
@@ -56,6 +60,7 @@ def metrics():
         lines.append(f'# TYPE a0_{name} histogram')
         for v in values:
             lines.append(f'a0_{name} {v}')
+    # Clone resource metrics
     with clone_metrics_lock:
         for clone_name, metrics in clone_metrics.items():
             cpu = metrics.get('cpu_percent')
@@ -66,6 +71,64 @@ def metrics():
             if mem is not None:
                 lines.append(f'# TYPE a0_clone_memory_bytes gauge')
                 lines.append(f'a0_clone_memory_bytes{{a0_clone="{clone_name}"}} {mem}')
+    # Token telemetry: aggregate leader + clones
+    # First, collect leader's own token data
+    leader_token_data = token_counter.get_metrics()
+    # Prepare combined counters and costs
+    combined_counters = {}
+    combined_costs = {}
+    # Add leader
+    for cid, models in leader_token_data.get('counters', {}).items():
+        combined_counters[cid] = models
+    for cid, models in leader_token_data.get('costs', {}).items():
+        combined_costs[cid] = models
+    # Add clones
+    with clone_token_lock:
+        for clone_name, tdata in clone_token_metrics.items():
+            counters = tdata.get('counters', {})
+            costs = tdata.get('costs', {})
+            # For each clone, counters keyed by model -> {input, output}
+            for model, dirs in counters.items():
+                if clone_name not in combined_counters:
+                    combined_counters[clone_name] = {}
+                if model not in combined_counters[clone_name]:
+                    combined_counters[clone_name][model] = {'input': 0, 'output': 0}
+                # Merge into existing (should be just this clone's own)
+                combined_counters[clone_name][model]['input'] += dirs.get('input', 0)
+                combined_counters[clone_name][model]['output'] += dirs.get('output', 0)
+            for model, cost_val in costs.items():
+                if clone_name not in combined_costs:
+                    combined_costs[clone_name] = {}
+                if model not in combined_costs[clone_name]:
+                    combined_costs[clone_name][model] = 0.0
+                combined_costs[clone_name][model] += cost_val
+    # Emit token count metrics (counter)
+    # TYPE a0_tokens_total counter (emit once)
+    # We'll emit TYPE first time we encounter any token metric, but need exactly one TYPE line. We'll emit before series.
+    emitted_token_type = False
+    for clone_id, models in combined_counters.items():
+        for model, dirs in models.items():
+            inp = dirs.get('input', 0)
+            out = dirs.get('output', 0)
+            if inp > 0:
+                if not emitted_token_type:
+                    lines.append('# TYPE a0_tokens_total counter')
+                    emitted_token_type = True
+                lines.append(f'a0_tokens_total{{a0_clone="{clone_id}",a0_model="{model}",direction="input"}} {inp}')
+            if out > 0:
+                if not emitted_token_type:
+                    lines.append('# TYPE a0_tokens_total counter')
+                    emitted_token_type = True
+                lines.append(f'a0_tokens_total{{a0_clone="{clone_id}",a0_model="{model}",direction="output"}} {out}')
+    # Emit cost metrics (gauge)
+    emitted_cost_type = False
+    for clone_id, models in combined_costs.items():
+        for model, cost in models.items():
+            if cost > 0:
+                if not emitted_cost_type:
+                    lines.append('# TYPE a0_cost_total gauge')
+                    emitted_cost_type = True
+                lines.append(f'a0_cost_total{{a0_clone="{clone_id}",a0_model="{model}",currency="USD"}} {cost:.6f}')
     return PlainTextResponse('\n'.join(lines))
 
 @app.post('/metrics/containers')
@@ -79,6 +142,11 @@ async def receive_container_metrics(request: Dict[str, Any]):
     }
     with clone_metrics_lock:
         clone_metrics[clone_name] = payload
+    # Store token metrics if present
+    token_metrics = request.get('token_metrics')
+    if token_metrics:
+        with clone_token_lock:
+            clone_token_metrics[clone_name] = token_metrics
     log_buffer.append(f"[Metrics] {clone_name}: CPU {payload['cpu_percent']}%, Memory {payload['memory_usage']} bytes")
     for ws in list(log_websockets):
         try:
@@ -145,6 +213,16 @@ async def ws_logs(websocket: WebSocket):
     except Exception:
         if websocket in log_websockets:
             log_websockets.remove(websocket)
+
+@app.get('/token_metrics')
+def token_metrics():
+    # Return aggregated token metrics JSON
+    leader_data = token_counter.get_metrics()
+    combined = {'leader': leader_data}
+    with clone_token_lock:
+        for clone_name, tdata in clone_token_metrics.items():
+            combined[clone_name] = tdata
+    return JSONResponse(combined)
 
 def run(port=None):
     import uvicorn

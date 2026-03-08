@@ -34,6 +34,9 @@ _trace_stop = threading.Event()
 _trace_spans = []
 _trace_lock = threading.Lock()
 
+# Token telemetry integration
+from token_telemetry import token_counter
+
 
 def _calculate_cpu_percent(stats):
     try:
@@ -64,6 +67,18 @@ def _metrics_reporter(clone_name, parent_url, interval=5):
                 'memory_limit': mem_limit,
                 'timestamp': datetime.now(timezone.utc).isoformat()
             }
+            # Include token metrics from local token_counter
+            try:
+                token_data = token_counter.get_metrics()
+                my_metrics = token_data['counters'].get(clone_name, {}) | token_data['costs'].get(clone_name, {})
+                # Flatten into two dicts
+                token_payload = {
+                    'counters': token_data['counters'].get(clone_name, {}),
+                    'costs': token_data['costs'].get(clone_name, {})
+                }
+                payload['token_metrics'] = token_payload
+            except Exception:
+                pass
             requests.post(parent_url.rstrip('/') + '/metrics/containers', json=payload, timeout=2)
         except Exception as e:
             print(f'[MetricsReporter error] {e}')
@@ -272,6 +287,45 @@ async def on_after_llm(agent, response, **kwargs):
         model = getattr(agent.config.chat_model, 'name', 'unknown')
         ctx.logger.info('llm_call', model=model)
         ctx.metrics.inc('llm_calls')
+
+    # Token telemetry extraction and recording
+    # Determine clone_id: if this is a clone, use A0_CLONE_NAME; else use 'leader' or ctx.id
+    clone_id = os.getenv('A0_CLONE_NAME')
+    if not clone_id:
+        clone_id = 'leader'
+    input_tokens = 0
+    output_tokens = 0
+    cost = None
+    currency = 'USD'
+    try:
+        # Extract usage from response
+        usage = None
+        if isinstance(response, dict):
+            usage = response.get('usage') or (response.get('choices', [{}])[0].get('usage'))
+        else:
+            usage = getattr(response, 'usage', None)
+        if usage:
+            if isinstance(usage, dict):
+                input_tokens = usage.get('prompt_tokens', 0) or usage.get('input_tokens', 0)
+                output_tokens = usage.get('completion_tokens', 0) or usage.get('output_tokens', 0)
+            else:
+                input_tokens = getattr(usage, 'prompt_tokens', 0) or getattr(usage, 'input_tokens', 0)
+                output_tokens = getattr(usage, 'completion_tokens', 0) or getattr(usage, 'output_tokens', 0)
+        # Compute cost using LiteLLM if available
+        try:
+            from litellm import completion_cost
+            # If response is a litellm.ModelResponse, can call completion_cost directly
+            cost = completion_cost(model=model, messages=[], completion=response)
+        except Exception:
+            cost = None
+        # Record to token_counter
+        token_counter.record(clone_id, model, input_tokens, output_tokens, cost=cost, currency=currency)
+    except Exception as e:
+        try:
+            ctx.logger.warning('token_telemetry_error', error=str(e))
+        except Exception:
+            pass
+
     try:
         span = getattr(ctx, '_llm_span', None)
         if span:

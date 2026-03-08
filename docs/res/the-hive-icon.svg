@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="hiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+  <!-- Hive/bee icon centered -->
+  <g transform="translate(50,50)">
+    <!-- Hexagonal hive shape -->
+    <path d="M0,-40 L34.6,-20 L34.6,20 L0,40 L-34.6,20 L-34.6,-20 Z" fill="url(#hiveGradient)"/>
+    <!-- Bee stripe details -->
+    <ellipse cx="0" cy="-12" rx="22" ry="7" fill="none" stroke="white" stroke-width="2.5" opacity="0.7"/>
+    <ellipse cx="0" cy="6" rx="22" ry="7" fill="none" stroke="white" stroke-width="2.5" opacity="0.7"/>
+    <!-- Bee wing accent -->
+    <ellipse cx="-15" cy="-18" rx="10" ry="6" fill="white" opacity="0.3"/>
+    <!-- Text 'H' inside hive -->
+    <text x="0" y="10" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-weight="700" font-size="36" fill="white" text-anchor="middle" dominant-baseline="central">H</text>
+  </g>
+</svg>

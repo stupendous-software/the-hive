@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Dark background -->
+  <rect width="400" height="120" fill="#0F172A"/>
+  <!-- Hexagon logo mark -->
+  <g transform="translate(60,60) scale(0.8)">
+    <polygon points="0,-50 43.3,-25 43.3,25 0,50 -43.3,25 -43.3,-25" fill="url(#grad)" filter="url(#glow)"/>
+    <polygon points="0,-35 25,-17.5 25,17.5 0,35 -25,17.5 -25,-17.5" fill="none" stroke="white" stroke-width="2" opacity="0.5"/>
+    <text x="0" y="5" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">SS</text>
+  </g>
+  <!-- Typography -->
+  <text x="170" y="55" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="42" fill="url(#grad)">STUPENDOUS</text>
+  <text x="170" y="82" font-family="Arial,sans-serif" font-weight="400" font-size="20" fill="#CBD5E1">SOFTWARE</text>
+</svg>
