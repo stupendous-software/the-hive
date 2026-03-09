@@ -1,53 +1,36 @@
 version: '3.8'
-
 services:
   agent-zero:
     container_name: agent-zero
     image: agent0ai/agent-zero:latest
     volumes:
-      - ./agent-zero:/a0
+    - ./tempo.yaml:/etc/tempo.yaml:ro
+    - tempo-data:/tmp/tempo
     ports:
-      - "50080:80"
-      - "8080:8080"
+    - 4318:4318
+    - 3200:3200
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318/v1/traces
-      - OTEL_SERVICE_NAME=agent-zero
-      - A0_SET_enable_observability=true
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318/v1/traces
+    - OTEL_SERVICE_NAME=agent-zero
+    - A0_SET_enable_observability=true
     networks:
-      - hive_net
-
-  tempo:
-    container_name: tempo
-    image: grafana/tempo:latest
-    command: ["-config.file=/etc/tempo.yaml"]
-    volumes:
-      - ./tempo.yaml:/etc/tempo.yaml:ro
-      - tempo-data:/tmp/tempo
-    ports:
-      - "4318:4318"
-      - "3200:3200"
-    networks:
-      - hive_net
-
+    - hive_net
   grafana:
     container_name: grafana
     image: grafana/grafana:latest
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    - grafana-data:/var/lib/grafana
+    - ./grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
-      - "3000:3000"
+    - 3000:3000
     networks:
-      - hive_net
+    - hive_net
     depends_on:
-      - tempo
-
+    - tempo
 volumes:
-  tempo-data:
-  grafana-data:
-
+  grafana-data: null
 networks:
   hive_net:
     driver: bridge
