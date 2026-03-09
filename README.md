@@ -40,7 +40,7 @@ docker run -p 50080:80 \
   -v a0_tmp:/a0/tmp \
   -e A0_SET_chat_model_provider=openrouter \
   -e A0_SET_chat_model_name=openrouter/auto \
-  agent0ai/agent-zero:latest
+  brianheston/the-hive:latest
 ```
 Then open `http://localhost:50080` and say:
 
@@ -84,13 +84,13 @@ docker run -p 50080:80 \
   -v a0_tmp:/a0/tmp \
   -e A0_SET_chat_model_provider=openrouter \
   -e A0_SET_chat_model_name=openrouter/auto \
-  agent0ai/agent-zero:latest
+  brianheston/the-hive:latest
 ```
 
 ### Manual Setup
 ```bash
 # Clone the repository
-git clone https://github.com/agent0ai/agent-zero.git
+git clone https://github.com/brianheston/the-hive.git
 cd agent-zero
 
 # Create virtual environment
