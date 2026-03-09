@@ -3,6 +3,7 @@ sys.path.insert(0, '/a0')
 sys.path.insert(0, '/a0/usr/workdir')
 import os
 import json
+from pathlib import Path
 import threading
 import time
 from datetime import datetime, timezone
@@ -13,6 +14,17 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 import psutil
 from observability import get_agent_status, MetricsCollector
 from token_telemetry import token_counter
+
+
+def get_public_url():
+    try:
+        settings_path = Path('/a0/usr/settings.json')
+        if settings_path.exists():
+            settings = json.loads(settings_path.read_text())
+            return settings.get('public_url', 'http://localhost')
+    except Exception:
+        pass
+    return 'http://localhost'
 
 app = FastAPI()
 clone_metrics: Dict[str, Dict[str, Any]] = {}
@@ -43,6 +55,8 @@ def status():
             'active_count': len(traces_store),
             'trace_ids': list(traces_store.keys())[:10]
         }
+    base['dashboard_url'] = f"{get_public_url()}/status"
+    base['health_url'] = f"{get_public_url()}/health"
     return JSONResponse(base)
 
 @app.get('/metrics')

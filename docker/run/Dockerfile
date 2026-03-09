@@ -28,3 +28,4 @@ RUN chmod +x /usr/local/bin/outer-entrypoint.sh \
 
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
 EXPOSE 22 80 9000-9009
+EXPOSE 8080
