@@ -1,35 +1,53 @@
 version: '3.8'
 services:
-  agent-zero:
-    container_name: agent-zero
-    image: agent0ai/agent-zero:latest
+  hive-main:
+    build:
+      context: .
+      dockerfile: docker/run/Dockerfile
+    container_name: hive-main
     volumes:
-    - ./tempo.yaml:/etc/tempo.yaml:ro
-    - tempo-data:/tmp/tempo
+    - ./:/a0
     ports:
-    - 4318:4318
-    - 3200:3200
+    - 8080:8080
     environment:
-    - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318/v1/traces
-    - OTEL_SERVICE_NAME=agent-zero
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    - OTEL_SERVICE_NAME=hive-main
     - A0_SET_enable_observability=true
     networks:
     - hive_net
+    depends_on:
+    - prometheus
+    - jaeger
+    - grafana
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+    - 9090:9090
+    networks:
+    - hive_net
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+    - COLLECTOR_OTLP_ENABLED=true
+    ports:
+    - 16686:16686
+    - 4318:4318
+    - 6831:6831/udp
+    networks:
+    - hive_net
   grafana:
-    container_name: grafana
     image: grafana/grafana:latest
     environment:
     - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
     - grafana-data:/var/lib/grafana
     - ./grafana/provisioning:/etc/grafana/provisioning:ro
-    - ./grafana/provisioning:/etc/grafana/provisioning
     ports:
     - 3000:3000
     networks:
     - hive_net
-    depends_on:
-    - tempo
 volumes:
   grafana-data: null
 networks:

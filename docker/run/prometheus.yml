@@ -2,6 +2,6 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'agent-zero-leader'
+  - job_name: 'hive-main'
     static_configs:
       - targets: ['hive-main:8080']
