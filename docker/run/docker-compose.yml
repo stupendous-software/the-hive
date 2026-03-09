@@ -2,7 +2,7 @@ version: '3.8'
 services:
   hive-main:
     build:
-      context: .
+      context: /a0
       dockerfile: docker/run/Dockerfile
     container_name: hive-main
     volumes:
