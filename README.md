@@ -91,7 +91,7 @@ docker run -p 50080:80 \
 ```bash
 # Clone the repository
 git clone https://github.com/brianheston/the-hive.git
-cd agent-zero
+cd the-hive
 
 # Create virtual environment
 python -m venv venv
