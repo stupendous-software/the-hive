@@ -21,6 +21,7 @@ COPY docs/ a0/docs/
 
 # 4) Ensure outer-entrypoint.sh is executable
 COPY scripts/outer-entrypoint.sh /usr/local/bin/outer-entrypoint.sh
+COPY a0/usr/scripts/docker-entrypoint.sh /a0/usr/scripts/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/outer-entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/outer-entrypoint.sh"]
