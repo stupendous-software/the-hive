@@ -1,5 +1,6 @@
 ARG CACHE_BUST=20260305T1955
 ARG BRANCH=beta
+ENV A0_CLONE_NAME="Hive Leader"
 FROM agent0ai/agent-zero:latest
 USER root
 

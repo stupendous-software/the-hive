@@ -53,6 +53,11 @@ else:
 PY
 fi
 # Create bootstrapped marker early
+
+# Auto-enable all discovered skills (ensures new skills are available)
+if [ -x /a0/usr/workdir/scripts/auto_enable_skills.py ]; then
+  python3 /a0/usr/workdir/scripts/auto_enable_skills.py
+fi
 touch /a0/.bootstrapped 2>/dev/null || true
 echo "[entrypoint] Bootstrapped marker created (early)" >&2
 # Start initialize
