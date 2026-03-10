@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import argparse
 import urllib.request
 import urllib.parse
 from html.parser import HTMLParser
@@ -51,10 +52,12 @@ def push_ntfy(title, message):
         print(f'[NTFY] Push failed: {e}', file=sys.stderr)
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: validator.py <base_url>')
-        sys.exit(1)
-    base_url = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('base_url', help='Base URL to validate')
+    parser.add_argument('--no-push', action='store_true', help='Do not send NTFY push notification')
+    args = parser.parse_args()
+
+    base_url = args.base_url
     if not base_url.endswith('/'):
         base_url += '/'
     try:
@@ -85,8 +88,9 @@ def main():
         title = 'Site Health Check – The Hive'
         msg = f"All links are OK on {base_url} (checked at {timestamp})."
 
-    # Attempt push if NTFY_TOPIC is set
-    push_ntfy(title, msg)
+    # Attempt push if NTFY_TOPIC is set and not suppressed
+    if not args.no_push:
+        push_ntfy(title, msg)
 
     sys.exit(0 if not broken else 1)
 

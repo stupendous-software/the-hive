@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
+<<<<<<< Updated upstream
 import sys, subprocess, json, os
+=======
+import sys, json, docker
+>>>>>>> Stashed changes
 
 port = int(sys.argv[1])
 mem = sys.argv[2]
 parent_obs_url = sys.argv[3] if len(sys.argv) > 3 else None
 trace_id = sys.argv[4] if len(sys.argv) > 4 else None
+
+client = docker.from_env()
 
 base_vol = 'hive_data'
 clone_vol = f'hive_clone_{mem}'
@@ -14,10 +20,16 @@ heartbeat_vol = 'hive_heartbeat'
 name = f'hive-clone-{mem}'
 image = 'brianheston/the-hive:beta'
 
+<<<<<<< Updated upstream
 # ==================== NETWORK DETECTION FIX ====================
 def get_parent_network():
     """Detect the Docker network the parent container is connected to.
     Returns network name or None if detection fails."""
+=======
+# ==================== NETWORK DETECTION ====================
+def get_parent_network():
+    """Detect the Docker network the parent container is on using Docker SDK."""
+>>>>>>> Stashed changes
     try:
         container_id = None
         with open('/proc/self/cgroup', 'r') as f:
@@ -30,6 +42,7 @@ def get_parent_network():
         if not container_id:
             print('WARNING: Could not determine container ID from /proc/self/cgroup')
             return None
+<<<<<<< Updated upstream
         result = subprocess.run(['docker', 'inspect', container_id],
                               capture_output=True, text=True, check=True)
         info = json.loads(result.stdout)
@@ -38,6 +51,14 @@ def get_parent_network():
             return None
         networks = list(info[0]['NetworkSettings']['Networks'].keys())
         print(f'INFO: Parent connected to networks: {networks}')
+=======
+        
+        # Use SDK to inspect container
+        container = client.containers.get(container_id)
+        networks = list(container.attrs['NetworkSettings']['Networks'].keys())
+        print(f'INFO: Parent connected to networks: {networks}')
+        
+>>>>>>> Stashed changes
         custom_networks = [n for n in networks if n not in ['bridge', 'host', 'none']]
         if custom_networks:
             selected = custom_networks[0]
@@ -49,19 +70,30 @@ def get_parent_network():
         else:
             print('WARNING: No suitable network found for inter-container communication')
             return None
+<<<<<<< Updated upstream
     except subprocess.CalledProcessError as e:
         print(f'WARNING: Docker command failed: {e.stderr if e.stderr else e}')
+=======
+    except docker.errors.NotFound:
+        print('WARNING: Parent container not found via Docker SDK')
+>>>>>>> Stashed changes
         return None
     except Exception as e:
         print(f'WARNING: Network detection error: {e}')
         return None
+<<<<<<< Updated upstream
 # ==================================================================
+=======
+# ============================================================
+>>>>>>> Stashed changes
 
 # Ensure volumes exist
-subprocess.run(['docker','volume','create',clone_vol], capture_output=True)
-subprocess.run(['docker','volume','create',log_vol], capture_output=True)
-subprocess.run(['docker','volume','create',tmp_vol], capture_output=True)
+print(f'Creating volumes: {clone_vol}, {log_vol}, {tmp_vol}')
+client.volumes.create(name=clone_vol)
+client.volumes.create(name=log_vol)
+client.volumes.create(name=tmp_vol)
 
+<<<<<<< Updated upstream
 # Copy base data from parent
 copy_cmd = [
     'docker','run','--rm',
@@ -130,7 +162,67 @@ print('Running:',' '.join(cmd))
 res = subprocess.run(cmd, capture_output=True, text=True)
 if res.returncode != 0:
     print('Launch failed:', res.stderr)
+=======
+# Copy base data from parent using a temporary Alpine container
+print('Copying base data from parent...')
+copy_cmd = 'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo "No settings.json"; '
+'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
+'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
+'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
+'mkdir -p /dst/memory /dst/projects'
+
+try:
+    copy_container = client.containers.run(
+        image='alpine',
+        command=['sh', '-c', copy_cmd],
+        volumes={
+            base_vol: {'bind': '/src', 'mode': 'ro'},
+            clone_vol: {'bind': '/dst', 'mode': 'rw'}
+        },
+        remove=True,
+        detach=False
+    )
+except Exception as e:
+    print('Copy failed:', e)
     sys.exit(1)
-print(f'Clone started: {res.stdout.strip()}')
-print(f'Connect: http://localhost:{port}')
-print('Bootstrap launched.')
+
+# Detect network
+network = get_parent_network()
+
+# Prepare run configuration
+run_kwargs = {
+    'image': image,
+    'name': name,
+    'ports': {'80/tcp': port},
+    'volumes': {
+        '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
+        base_vol: {'bind': '/a0', 'mode': 'ro'},
+        clone_vol: {'bind': '/a0/usr', 'mode': 'rw'},
+        log_vol: {'bind': '/a0/logs', 'mode': 'rw'},
+        tmp_vol: {'bind': '/a0/tmp', 'mode': 'rw'},
+        heartbeat_vol: {'bind': '/heartbeat', 'mode': 'rw'},
+        'hive_secrets': {'bind': '/a0/usr/.secrets', 'mode': 'ro'}
+    },
+    'environment': {
+        'A0_SET_agent_memory_subdir': mem,
+        'A0_CLONE_NAME': mem,
+        'A0_CLONE_PORT': str(port),
+        'A0_CLONE_MEMORY_SUBDIR': mem,
+        'A0_PARENT_UUID': 'unknown'
+    },
+    'detach': True
+}
+
+if network:
+    run_kwargs['network'] = network
+
+print(f'Running clone container with config: {run_kwargs}')
+try:
+    container = client.containers.run(**run_kwargs)
+    print(f'Clone started: {container.id[:12]}')
+    print(f'Connect: http://localhost:{port}')
+    print('Bootstrap launched.')
+except Exception as e:
+    print('Launch failed:', e)
+>>>>>>> Stashed changes
+    sys.exit(1)

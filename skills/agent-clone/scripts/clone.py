@@ -57,6 +57,7 @@ subprocess.run(['docker','volume','create',clone_vol], capture_output=True)
 subprocess.run(['docker','volume','create',log_vol], capture_output=True)
 subprocess.run(['docker','volume','create',tmp_vol], capture_output=True)
 
+<<<<<<< Updated upstream
 copy_cmd = [
     'docker','run','--rm',
     '-v',f'{base_vol}:/src:ro',
@@ -71,6 +72,37 @@ copy_cmd = [
 res = subprocess.run(copy_cmd, capture_output=True, text=True)
 if res.returncode != 0:
     print('Copy failed:', res.stderr)
+=======
+# Copy base data from parent using a temporary Alpine container
+print('Copying base data from parent...')
+# Copy base data from parent using a temporary Alpine container
+print('Copying base data from parent...')
+copy_cmd = (
+        'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo "No settings.json"; '
+        'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
+        'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
+        'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
+        'mkdir -p /dst/memory /dst/projects'
+    )
+'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
+'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
+'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
+'mkdir -p /dst/memory /dst/projects'
+
+try:
+    copy_container = client.containers.run(
+        image='alpine',
+        command=['sh', '-c', copy_cmd],
+        volumes={
+            base_vol: {'bind': '/src', 'mode': 'ro'},
+            clone_vol: {'bind': '/dst', 'mode': 'rw'}
+        },
+        remove=True,
+        detach=False
+    )
+except Exception as e:
+    print('Copy failed:', e)
+>>>>>>> Stashed changes
     sys.exit(1)
 
 cmd = [
