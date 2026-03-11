@@ -1,6 +1,6 @@
 # Contributing Guide
 
-We welcome contributions to Agent Zero! This guide helps you get started.
+We welcome contributions to clone! This guide helps you get started.
 
 ## Quick Start
 
@@ -60,4 +60,4 @@ Join our Discord for dev chat and support.
 
 Contributions are licensed under the MIT License.
 
-Thank you for making Agent Zero better! 🚀
+Thank you for making clone better! 🚀

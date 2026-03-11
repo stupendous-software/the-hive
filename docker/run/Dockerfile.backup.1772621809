@@ -3,7 +3,7 @@ FROM agent0ai/agent-zero-base:latest
 ARG BRANCH=beta
 ENV BRANCH=$BRANCH
 
-# Copy full Agent Zero source
+# Copy full clone source
 COPY ./fs/ /
 
 # Ensure entrypoint script is executable

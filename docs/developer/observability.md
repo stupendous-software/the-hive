@@ -1,7 +1,7 @@
 
 ## Stage 3B – Token & Cost Telemetry (New)
 
-Agent Zero now tracks per-agent token usage and estimated costs in real-time, providing instant insight into LLM spend across your swarm.
+clone now tracks per-agent token usage and estimated costs in real-time, providing instant insight into LLM spend across your swarm.
 
 ### Features
 

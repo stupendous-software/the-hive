@@ -81,17 +81,17 @@ if [ -f /a0/usr/scripts/parent_clone_manager.py ]; then
 else
   PM_PID=""
 fi
-# Substitute clone name: replace 'Agent Zero' with clone name
-if [ -f /a0/webui/index.html ] && grep -q 'Agent Zero' /a0/webui/index.html; then
+# Substitute clone name: replace 'clone' with clone name
+if [ -f /a0/webui/index.html ] && grep -q 'clone' /a0/webui/index.html; then
   echo "[entrypoint] Performing clone name substitution" >&2
-  find /a0 -type f -exec grep -Iq . {} \; -exec sed -i "s/Agent Zero/${A0_CLONE_NAME:-clone}/g" {} \; 2>/dev/null || true
+  find /a0 -type f -exec grep -Iq . {} \; -exec sed -i "s/clone/${A0_CLONE_NAME:-clone}/g" {} \; 2>/dev/null || true
 fi
 # Ensure A2A agent.json has correct agent name
 for f in /a0/agent/.well-known/agent.json /.well-known/agent.json; do
   if [ -f "$f" ]; then
-    if grep -q '"name"\s*:\s*"Agent Zero"' "$f"; then
+    if grep -q '"name"\s*:\s*"clone"' "$f"; then
       echo "[entrypoint] Updating A2A agent name in $f" >&2
-      sed -i "s/\"name\"\s*:\s*\"Agent Zero\"/\"name\"\s*:\s*\"${A0_CLONE_NAME:-clone}\"/g" "$f"
+      sed -i "s/\"name\"\s*:\s*\"clone\"/\"name\"\s*:\s*\"${A0_CLONE_NAME:-clone}\"/g" "$f"
     fi
   fi
 done

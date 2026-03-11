@@ -1,7 +1,7 @@
 name: clone-heartbeat-monitor
 description: Monitors clone agents for health status, collects logs from failed clones, and sends alerts.
 version: 1.0.0
-author: Agent Zero
+author: clone
 tags:
   - monitoring
   - health
@@ -15,7 +15,7 @@ allowed_tools:
 # Clone Heartbeat Monitor Skill
 
 ## Overview
-This skill provides proactive monitoring of Agent Zero clones. It detects offline clones, retrieves their logs, and notifies the user with diagnostic information.
+This skill provides proactive monitoring of clone clones. It detects offline clones, retrieves their logs, and notifies the user with diagnostic information.
 
 ## Usage
 Run the monitor script manually or schedule it:

@@ -1,6 +1,6 @@
 # Skills System
 
-Skills are plug‑and‑play packages that extend Agent Zero with new tools, commands, and UI components. Whether you need PDF parsing, web search, or custom integrations, the skill marketplace and local development workflow make it easy.
+Skills are plug‑and‑play packages that extend clone with new tools, commands, and UI components. Whether you need PDF parsing, web search, or custom integrations, the skill marketplace and local development workflow make it easy.
 
 ## What is a Skill?
 A skill follows the **agentskills.io** standard and includes:
@@ -14,7 +14,7 @@ A skill follows the **agentskills.io** standard and includes:
 a0_skill install <skill-id>
 ```
 ### Local Development
-Place the skill folder under `a0/usr/skills/` and Agent Zero will automatically load it on restart (or hot‑reload if enabled).
+Place the skill folder under `a0/usr/skills/` and clone will automatically load it on restart (or hot‑reload if enabled).
 
 
 ## Developing a Skill
@@ -24,7 +24,7 @@ Place the skill folder under `a0/usr/skills/` and Agent Zero will automatically 
 4. Test locally, then share or publish.
 
 ## Security Considerations
-- Skills run with the same permissions as the Agent Zero process. Restrict skill installation to trusted sources.
+- Skills run with the same permissions as the clone process. Restrict skill installation to trusted sources.
 - Secrets accessed by skill scripts are injected via the secure vault.
 
 ---

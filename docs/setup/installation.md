@@ -1,6 +1,6 @@
 # Installation Guide
 
-Agent Zero (The Hive) is designed for Docker deployment (recommended) but also supports manual installation.
+clone (The Hive) is designed for Docker deployment (recommended) but also supports manual installation.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ After startup, open `http://localhost:50080` in your browser.
 
 ### Advanced Configuration via Environment Variables
 
-You can configure many Agent Zero settings without manual UI steps using the `A0_SET_` prefix. This enables automated deployments.
+You can configure many clone settings without manual UI steps using the `A0_SET_` prefix. This enables automated deployments.
 
 **Usage:**
 
@@ -85,7 +85,7 @@ docker run -d \
 
 ### Secret Management
 
-Agent Zero requires API keys for LLM providers and other services. Use Docker secrets or a mounted volume – never bake them into images.
+clone requires API keys for LLM providers and other services. Use Docker secrets or a mounted volume – never bake them into images.
 
 ```bash
 docker run -d \

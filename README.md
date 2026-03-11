@@ -1,4 +1,4 @@
-# The Hive – An Agent Zero Extension 🤖
+# The Hive – An clone Extension 🤖
 
 [![GitHub stars](https://img.shields.io/github/stars/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/stargazers)
 [![GitHub watchers](https://img.shields.io/github/watchers/stupendous-software/the-hive?style=social)](https://github.com/stupendous-software/the-hive/watchers)
@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
-> **The Hive** extends **Agent Zero** with advanced multi‑agent swarms, persistent memory, and observability. It’s a production‑ready platform for building autonomous AI assistants that remember, collaborate, and grow with you.
+> **The Hive** extends **clone** with advanced multi‑agent swarms, persistent memory, and observability. It’s a production‑ready platform for building autonomous AI assistants that remember, collaborate, and grow with you.
 
 ---
 
@@ -52,7 +52,7 @@ The agent will spawn a subordinate researcher, fetch the data, and remember the 
 
 ## 📖 Core Concepts in a Nutshell
 
-1. **Computer as a Tool** – Agent Zero uses your operating system as a tool. It can write code and use the terminal to create and run its own tools on the fly.
+1. **Computer as a Tool** – clone uses your operating system as a tool. It can write code and use the terminal to create and run its own tools on the fly.
 2. **Multi‑Agent Cooperation** – Every agent can spawn subordinates. Superiors delegate subtasks and aggregate results; the chain ends with the human user.
 3. **Completely Customizable** – Nothing is hard-coded. Change the system prompt, tools, or messages in the `prompts/` folder to reshape behavior.
 4. **Communication is Key** – Instruct your agents in natural language. The terminal UI streams responses in real time; you can intervene anytime.

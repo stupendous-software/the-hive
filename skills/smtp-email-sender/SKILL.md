@@ -2,7 +2,7 @@
 name: smtp-email-sender
 description: Send emails via SMTP with support for plain text, HTML, and attachments. Configurable through environment variables or direct parameters.
 version: 1.0.0
-author: Agent Zero
+author: clone
 tags:
   - email
   - smtp
@@ -10,7 +10,7 @@ tags:
 allowed_tools:
   - code_execution_tool
 license: MIT
-compatibility: Agent Zero
+compatibility: clone
 ---
 
 # smtp-email-sender

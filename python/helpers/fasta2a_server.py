@@ -62,14 +62,14 @@ _PRINTER = PrintStyle(italic=True, font_color="purple", padding=False)
 
 
 class AgentZeroWorker(Worker):  # type: ignore[misc]
-    """Agent Zero implementation of FastA2A Worker."""
+    """clone implementation of FastA2A Worker."""
 
     def __init__(self, broker, storage):
         super().__init__(broker=broker, storage=storage)
         self.storage = storage
 
     async def run_task(self, params: Any) -> None:  # params: TaskSendParams
-        """Execute a task by processing the message through Agent Zero."""
+        """Execute a task by processing the message through clone."""
         context = None
         try:
             task_id = params['id']
@@ -77,7 +77,7 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
 
             _PRINTER.print(f"[A2A] Processing task {task_id} with new temporary context")
 
-            # Convert A2A message to Agent Zero format
+            # Convert A2A message to clone format
             agent_message = self._convert_message(message)
 
             # Always create new temporary context for this A2A conversation
@@ -100,7 +100,7 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
                 kvps={"from": "A2A"},
             )
 
-            # Process message through Agent Zero (includes response)
+            # Process message through clone (includes response)
             task = context.communicate(agent_message)
             result_text = await task.result()
 
@@ -156,7 +156,7 @@ class AgentZeroWorker(Worker):  # type: ignore[misc]
         return []
 
     def _convert_message(self, a2a_message: Message) -> UserMessage:  # type: ignore
-        """Convert A2A message to Agent Zero UserMessage."""
+        """Convert A2A message to clone UserMessage."""
         # Extract text from message parts
         text_parts = [part.get('text', '') for part in a2a_message.get('parts', []) if part.get('kind') == 'text']
         message_text = '\n'.join(text_parts)
@@ -215,12 +215,12 @@ class DynamicA2AProxy:
                 _PRINTER.print("[A2A] Reconfiguration scheduled for next request")
 
     def _configure(self):
-        """Configure the FastA2A application with Agent Zero integration."""
+        """Configure the FastA2A application with clone integration."""
         try:
             storage = InMemoryStorage()  # type: ignore[arg-type]
             broker = InMemoryBroker()  # type: ignore[arg-type]
 
-            # Define Agent Zero's skills
+            # Define clone's skills
             skills: List[Skill] = [{  # type: ignore
                 "id": "general_assistance",
                 "name": "General AI Assistant",
@@ -238,7 +238,7 @@ class DynamicA2AProxy:
             }]
 
             provider: AgentProvider = {  # type: ignore
-                "organization": "Agent Zero",
+                "organization": "clone",
                 "url": "https://github.com/frdel/agent-zero"
             }
 
@@ -246,7 +246,7 @@ class DynamicA2AProxy:
             new_app = FastA2A(  # type: ignore
                 storage=storage,
                 broker=broker,
-                name="Agent Zero",
+                name="clone",
                 description=(
                     "A general AI assistant that can execute code, manage files, browse the web, and "
                     "solve complex problems in an isolated Linux environment."

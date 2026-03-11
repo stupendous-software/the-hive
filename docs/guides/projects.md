@@ -1,6 +1,6 @@
 # Projects
 
-Projects in Agent Zero provide **isolated workspaces** for your agents. Each project has its own memory store, instructions, and secrets—perfect for multi-client setups, separate research domains, or simply keeping contexts clean.
+Projects in clone provide **isolated workspaces** for your agents. Each project has its own memory store, instructions, and secrets—perfect for multi-client setups, separate research domains, or simply keeping contexts clean.
 
 ## Key Concepts
 - **Isolation**: Memory, uploaded files, and project-specific prompts are never shared across projects.
@@ -8,7 +8,7 @@ Projects in Agent Zero provide **isolated workspaces** for your agents. Each pro
 - **Switching**: Change the active project via the Web UI (top-right selector) or programmatically using the API.
 
 ## Creating a Project
-Projects can be created on the fly. The first time you switch to a non-existent project, Agent Zero will initialize it with default instructions.
+Projects can be created on the fly. The first time you switch to a non-existent project, clone will initialize it with default instructions.
 
 ### Via UI
 1. Click the project dropdown in the top navigation.

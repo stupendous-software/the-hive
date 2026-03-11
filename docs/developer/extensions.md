@@ -1,6 +1,6 @@
 # Extensions Framework
 
-Extend Agent Zero by:
+Extend clone by:
 - Writing custom tools
 - Adding new prompt profiles
 - Developing skills

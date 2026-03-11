@@ -1,6 +1,6 @@
 # Development Setup
 
-Instructions for developers working on Agent Zero core.
+Instructions for developers working on clone core.
 
 - Use Python 3.11+
 - Install dev dependencies: `pip install -r a0/requirements.txt`

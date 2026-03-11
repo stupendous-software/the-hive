@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common issues and solutions for running Agent Zero.
+Common issues and solutions for running clone.
 
 ## Web UI Not Loading
 

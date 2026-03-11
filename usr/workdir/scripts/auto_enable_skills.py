@@ -3,7 +3,7 @@ import json, os, re, sys
 
 SETTINGS = '/a0/usr/settings.json'
 
-# Known skill roots (match Agent Zero discovery)
+# Known skill roots (match clone discovery)
 SKILL_ROOTS = [
     '/a0/usr/workdir',
     '/a0/usr/skills',

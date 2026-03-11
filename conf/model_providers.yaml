@@ -1,4 +1,4 @@
-# Supported model providers for Agent Zero
+# Supported model providers for clone
 # ---------------------------------------
 #
 # Each provider type ("chat", "embedding") contains a mapping of provider IDs
@@ -18,7 +18,7 @@
 
 chat:
   a0_venice:
-    name: Agent Zero API
+    name: clone API
     litellm_provider: openai
     kwargs:
       api_base: https://llm.agent-zero.ai/v1
@@ -77,7 +77,7 @@ chat:
     kwargs:
       extra_headers:
         "HTTP-Referer": "https://agent-zero.ai/"
-        "X-Title": "Agent Zero"
+        "X-Title": "clone"
   sambanova:
     name: Sambanova
     litellm_provider: sambanova
@@ -138,7 +138,7 @@ embedding:
       api_base: https://openrouter.ai/api/v1
       extra_headers:
         "HTTP-Referer": "https://agent-zero.ai/"
-        "X-Title": "Agent Zero"
+        "X-Title": "clone"
   other:
     name: Other OpenAI compatible
     litellm_provider: openai

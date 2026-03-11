@@ -7,7 +7,7 @@ router = APIRouter(prefix="/api/clone", tags=["clone"])  # type: ignore
 
 # Simple auth placeholder: in real app, use session or token
 def get_current_user(request: Request):
-    # For now, allow any; later integrate with Agent Zero auth system
+    # For now, allow any; later integrate with clone auth system
     return "admin"
 
 class LLMOverride(BaseModel):

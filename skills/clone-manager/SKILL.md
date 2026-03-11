@@ -1,7 +1,7 @@
 name: clone-manager
 description: Enhanced clone management with functional controls, A2A communication configuration, and distinct listing (clones vs agents).
 version: 1.0.0
-author: Agent Zero
+author: clone
 tags:
   - docker
   - clone
@@ -12,7 +12,7 @@ allowed_tools:
 # Clone Manager Skill
 
 ## Overview
-Provides comprehensive management of Agent Zero clones including start, stop, restart, delete (with confirmation), and automatic A2A protocol configuration for inter-agent communication.
+Provides comprehensive management of clone clones including start, stop, restart, delete (with confirmation), and automatic A2A protocol configuration for inter-agent communication.
 
 ## Tools
 
@@ -20,7 +20,7 @@ Provides comprehensive management of Agent Zero clones including start, stop, re
 List all clone containers (excludes self). Returns a markdown table with status, port, memory subdir, and action icons.
 
 ### list_agents
-List all Agent Zero containers (includes self).
+List all clone containers (includes self).
 
 ### start_container <container_name>
 Start a stopped container. No confirmation required.

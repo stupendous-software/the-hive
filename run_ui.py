@@ -536,9 +536,10 @@ def wait_for_health(host: str, port: int):
         if not url.startswith(("http://", "https://")):
             raise ValueError("Only http/https URLs allowed")
         try:
+        if not url.startswith(("http://", "https://")): raise ValueError("Only http/https URLs allowed")
             with urllib.request.urlopen(url, timeout=2) as resp:
                 if resp.status == 200:
-                    PrintStyle().print("Agent Zero is running.")
+                    PrintStyle().print("clone is running.")
                     return
         except Exception:
             pass

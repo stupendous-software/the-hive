@@ -1,6 +1,6 @@
 # Usage Guide
 
-Agent Zero offers several interfaces: the Web UI (primary), local terminal (debug), and programmatic API.
+clone offers several interfaces: the Web UI (primary), local terminal (debug), and programmatic API.
 
 ## Web Interface
 
@@ -74,7 +74,7 @@ For creating skills, see the [Skills Guide](./skills.md).
 
 ### Connectivity
 
-- **MCP**: Agent Zero can act as an MCP server or connect to external MCP servers. Enable in Settings → MCP.
+- **MCP**: clone can act as an MCP server or connect to external MCP servers. Enable in Settings → MCP.
 - **A2A**: Secure agent-to-agent communication using FastA2A. Configure in Settings → A2A.
 
 ### Scheduler & Tasks

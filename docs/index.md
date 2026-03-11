@@ -1,5 +1,5 @@
 ---
-title: The Hive - An Agent Zero Extension
+title: The Hive - An clone Extension
 search: false
 ---
 
@@ -18,7 +18,7 @@ search: false
 
 ## 🆚 Framework Comparison
 
-| Feature | Classic Agent Zero | Agent Zero + Hive | Other Frameworks |
+| Feature | Classic clone | clone + Hive | Other Frameworks |
 |---------|-------------------|------------------|-----------------|
 | Multi-agent | ✅ Basic | ✅ **Advanced** (hierarchical trees) | ❌ Limited |
 | Observability | ❌ | ✅ **Full metrics & audit trail** | ⚠️ Partial |

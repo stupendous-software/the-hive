@@ -1,6 +1,6 @@
 # API Integration
 
-Agent Zero exposes a RESTful API and a WebSocket interface for programmatic control, enabling tight integration with external systems.
+clone exposes a RESTful API and a WebSocket interface for programmatic control, enabling tight integration with external systems.
 
 ## Base URL
 - HTTP API: `http://localhost:50080/api`
@@ -42,7 +42,7 @@ The agent will handle delegation and return the subordinate’s response.
 ---
 
 ## Agent-to-Agent (A2A)
-Agent Zero implements the FastA2A protocol, allowing secure communication with other agents. Use the `a2a_chat` tool to send messages and files.
+clone implements the FastA2A protocol, allowing secure communication with other agents. Use the `a2a_chat` tool to send messages and files.
 
 ## Webhooks
 Configure webhooks to trigger external HTTP endpoints on events (e.g., task completion, error). Set `A0_WEBHOOK_URL` in the environment or via the API.
