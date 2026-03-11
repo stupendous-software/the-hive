@@ -43,7 +43,7 @@ class UnsecuredConnectionCheck(Extension):
             })
 
     def _is_localhost(self, hostname: str) -> bool:
-        local_patterns = ["localhost", "127.0.0.1", "::1"]
+        local_patterns = ["localhost", "127.0.0.1", "::1", "0.0.0.0"]
         
         if hostname in local_patterns:
             return True

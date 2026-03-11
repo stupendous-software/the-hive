@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  hive-main:
+    build:
+      context: /a0
+      dockerfile: docker/run/Dockerfile
+    volumes:
+      - /a0:/a0
+    ports:
+      - "20202:80"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - OTEL_SERVICE_NAME=hive-main
+      - A0_SET_enable_observability=true
+      - HOST=0.0.0.0
+      - PORT=80
+    networks:
+      - test_hive_net
+    depends_on:
+      - prometheus
+      - jaeger
+      - grafana
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - /a0/docker/run/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "20201:9090"
+    networks:
+      - test_hive_net
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "20203:16686"
+      - "20204:4318"
+      - "20205:6831/udp"
+    networks:
+      - test_hive_net
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - test_hive_grafana-data:/var/lib/grafana
+      - /a0/docker/run/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "20206:3000"
+    networks:
+      - test_hive_net
+
+volumes:
+  test_hive_grafana-data:
+
+networks:
+  test_hive_net:
+    driver: bridge

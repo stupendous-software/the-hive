@@ -28,8 +28,6 @@ class LinkParser(HTMLParser):
 
 def check_url(url):
     try:
-        if not url.startswith(("http://", "https://")):
-            raise ValueError("Only http/https URLs allowed")
         req = urllib.request.Request(url, method='HEAD')
         with urllib.request.urlopen(req, timeout=10) as response:
             return response.status
@@ -43,8 +41,6 @@ def push_ntfy(title, message):
         return
     server = os.getenv('NTFY_SERVER_URL', 'https://ntfy.ibuilt.one')
     url = f"{server.rstrip('/')}/{topic}"
-    if not url.startswith(("http://", "https://")):
-        raise ValueError("Only http/https URLs allowed")
     data = message.encode('utf-8')
     headers = {'Title': title.encode('utf-8')}
     try:
@@ -65,8 +61,6 @@ def main():
     if not base_url.endswith('/'):
         base_url += '/'
     try:
-        if not base_url.startswith(("http://", "https://")):
-            raise ValueError("Only http/https URLs allowed")
         with urllib.request.urlopen(base_url, timeout=10) as response:
             html = response.read().decode('utf-8')
     except Exception as e:

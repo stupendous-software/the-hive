@@ -533,8 +533,6 @@ def run():
 def wait_for_health(host: str, port: int):
     url = f"http://{host}:{port}/health"
     while True:
-        if not url.startswith(("http://", "https://")):
-            raise ValueError("Only http/https URLs allowed")
         try:
             with urllib.request.urlopen(url, timeout=2) as resp:
                 if resp.status == 200:
@@ -542,8 +540,6 @@ def wait_for_health(host: str, port: int):
                     return
         except Exception:
             pass
-        time.sleep(1)
-
         time.sleep(1)
 
 

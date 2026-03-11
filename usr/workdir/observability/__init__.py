@@ -82,8 +82,8 @@ def get_agent_status():
             if hasattr(ctx, 'memory') and hasattr(ctx.memory, 'size'):
                 try:
                     total_mem += ctx.memory.size()
-                except: pass
-        except: continue
+                except Exception: pass
+        except Exception: continue
     active = sum(1 for a in agents.values() if a['state'] == 'running')
     idle = sum(1 for a in agents.values() if a['state'] == 'idle')
     return {

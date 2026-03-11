@@ -14,6 +14,7 @@ from python.helpers.providers import get_providers, FieldOption as ProvidersFO
 from python.helpers.secrets import get_default_secrets_manager
 from python.helpers import dirty_json
 from python.helpers.notification import NotificationManager, NotificationType, NotificationPriority
+import sys
 
 
 T = TypeVar('T')
@@ -117,8 +118,6 @@ class Settings(TypedDict):
     memory_memorize_enabled: bool
     memory_memorize_consolidation: bool
     memory_memorize_replace_threshold: float
-    # Enable/disable history compression logic (summarization/merging)
-    history_compression_enabled: bool
 
     api_keys: dict[str, str]
 
@@ -769,14 +768,20 @@ def _dict_to_env(data_dict):
 def set_root_password(password: str):
     if not runtime.is_dockerized():
         raise Exception("root password can only be set in dockerized environments")
-    _result = subprocess.run(
-        ["chpasswd"],
-        input=f"root:{password}".encode(),
-        capture_output=True,
-        check=True,
-    )
+    if not password:
+        # No password provided; skip chpasswd
+        dotenv.save_dotenv_value(dotenv.KEY_ROOT_PASSWORD, "")
+        return
+    try:
+        subprocess.run(
+            ["chpasswd"],
+            input=f"root:{password}".encode(),
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: chpasswd failed: {e.stderr.decode().strip() if e.stderr else str(e)}", file=sys.stderr)
     dotenv.save_dotenv_value(dotenv.KEY_ROOT_PASSWORD, password)
-
 
 def get_runtime_config(set: Settings):
     if runtime.is_dockerized():

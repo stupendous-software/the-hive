@@ -23,7 +23,7 @@ class KnowledgeImport(TypedDict):
 
 
 def calculate_checksum(file_path: str) -> str:
-    hasher = hashlib.sha256()
+    hasher = hashlib.md5()
     with open(file_path, "rb") as f:
         buf = f.read()
         hasher.update(buf)
