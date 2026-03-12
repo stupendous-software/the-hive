@@ -542,9 +542,7 @@ def wait_for_health(host: str, port: int):
                     return
         except Exception:
             pass
-        time.sleep(1)
-
-def init_a0():
+        time.sleep(1)def init_a0():
     # initialize contexts and MCP
     init_chats = initialize.initialize_chats()
     # only wait for init chats, otherwise they would seem to disappear for a while on restart
