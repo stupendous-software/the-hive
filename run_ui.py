@@ -536,7 +536,6 @@ def wait_for_health(host: str, port: int):
         if not url.startswith(("http://", "https://")):
             raise ValueError("Only http/https URLs allowed")
         try:
-        if not url.startswith(("http://", "https://")): raise ValueError("Only http/https URLs allowed")
             with urllib.request.urlopen(url, timeout=2) as resp:
                 if resp.status == 200:
                     PrintStyle().print("clone is running.")
@@ -544,9 +543,6 @@ def wait_for_health(host: str, port: int):
         except Exception:
             pass
         time.sleep(1)
-
-        time.sleep(1)
-
 
 def init_a0():
     # initialize contexts and MCP
@@ -566,3 +562,5 @@ if __name__ == "__main__":
     runtime.initialize()
     dotenv.load_dotenv()
     run()
+
+
