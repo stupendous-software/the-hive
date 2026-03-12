@@ -16,6 +16,10 @@ usr/*
 !usr/common/
 !usr/common/*
 !usr/scripts/a2a.conf
+!usr/workdir/
+!usr/workdir/*
+!usr/workdir/scripts/
+!usr/workdir/scripts/*
 
 
 # Keep .gitkeep markers anywhere
