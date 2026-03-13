@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys, subprocess, json, os
+import requests
+import datetime
 
 port = int(sys.argv[1])
 mem = sys.argv[2]
@@ -13,6 +15,77 @@ tmp_vol = f'hive_tmp_{mem}'
 heartbeat_vol = 'hive_heartbeat'
 name = f'hive-clone-{mem}'
 image = 'brianheston/the-hive:beta'
+
+
+def get_management_key():
+    """Load OpenRouter management key from secrets file."""
+    secrets_path = '/a0/usr/.secrets'
+    try:
+        with open(secrets_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    key, val = line.split('=', 1)
+                    if key == 'OPENROUTER_MANAGEMENT_KEY':
+                        return val
+    except Exception as e:
+        print(f'ERROR: Could not load OPENROUTER_MANAGEMENT_KEY: {e}')
+        return None
+
+
+def create_openrouter_key(clone_name):
+    """Create an OpenRouter API key for this clone.
+    Returns tuple (key_string, key_id) or (None, None).
+    """
+    management_key = get_management_key()
+    if not management_key:
+        print('ERROR: OPENROUTER_MANAGEMENT_KEY not available')
+        return None, None
+    url = 'https://openrouter.ai/api/v1/keys'
+    payload = {
+        'name': clone_name,
+        'limit': 0,
+        'limit_reset': None
+    }
+    try:
+        resp = requests.post(url, headers={
+            'Authorization': f'Bearer {management_key}',
+            'Content-Type': 'application/json'
+        }, json=payload, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        key = data.get('key')
+        key_id = data.get('id')  # Store the key ID for revocation
+        if key:
+            print(f'[OpenRouter] Created key for {clone_name}')
+            return key, key_id
+        else:
+            print(f'[OpenRouter] Response missing key: {data}')
+            return None, None
+    except Exception as e:
+        print(f'[OpenRouter] Failed to create key: {e}')
+        return None, None
+
+
+def store_clone_key_in_registry(clone_name, key_id):
+    """Store the clone's OpenRouter key ID in the registry for later revocation."""
+    registry_path = '/a0/usr/clone_registry.json'
+    try:
+        if os.path.exists(registry_path):
+            with open(registry_path, 'r') as f:
+                registry = json.load(f)
+        else:
+            registry = {}
+        registry[clone_name] = {
+            'openrouter_key_id': key_id,
+            'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
+        }
+        with open(registry_path, 'w') as f:
+            json.dump(registry, f, indent=2)
+        print(f'[Registry] Stored OpenRouter key ID for {clone_name}')
+    except Exception as e:
+        print(f'[Registry] Failed to store key: {e}')
+
 
 def get_parent_network():
     try:
@@ -53,43 +126,24 @@ def get_parent_network():
         print(f'WARNING: Network detection error: {e}')
         return None
 
-subprocess.run(['docker','volume','create',clone_vol], capture_output=True)
-subprocess.run(['docker','volume','create',log_vol], capture_output=True)
-subprocess.run(['docker','volume','create',tmp_vol], capture_output=True)
 
-<<<<<<< Updated upstream
-copy_cmd = [
-    'docker','run','--rm',
-    '-v',f'{base_vol}:/src:ro',
-    '-v',f'{clone_vol}:/dst',
-    'alpine','sh','-c',
-    'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo \"No settings.json\"; '
+# Create Docker volumes
+subprocess.run(['docker', 'volume', 'create', clone_vol], capture_output=True)
+subprocess.run(['docker', 'volume', 'create', log_vol], capture_output=True)
+subprocess.run(['docker', 'volume', 'create', tmp_vol], capture_output=True)
+
+# Copy base data from parent
+print('Copying base data from parent...')
+copy_cmd = (
+    'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo "No settings.json"; '
     'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
     'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
     'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
     'mkdir -p /dst/memory /dst/projects'
-]
-res = subprocess.run(copy_cmd, capture_output=True, text=True)
-if res.returncode != 0:
-    print('Copy failed:', res.stderr)
-=======
-# Copy base data from parent using a temporary Alpine container
-print('Copying base data from parent...')
-# Copy base data from parent using a temporary Alpine container
-print('Copying base data from parent...')
-copy_cmd = (
-        'cp -a /src/usr/settings.json /dst/ 2>/dev/null || echo "No settings.json"; '
-        'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
-        'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
-        'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
-        'mkdir -p /dst/memory /dst/projects'
-    )
-'if [ -f /src/usr/.env ]; then cp -a /src/usr/.env /dst/; fi; '
-'if [ -f /src/usr/secrets.env ]; then cp -a /src/usr/secrets.env /dst/; fi; '
-'if [ -d /src/usr/scripts ]; then cp -a /src/usr/scripts /dst/; fi; '
-'mkdir -p /dst/memory /dst/projects'
-
+)
 try:
+    import docker
+    client = docker.from_env()
     copy_container = client.containers.run(
         image='alpine',
         command=['sh', '-c', copy_cmd],
@@ -102,27 +156,36 @@ try:
     )
 except Exception as e:
     print('Copy failed:', e)
->>>>>>> Stashed changes
     sys.exit(1)
 
+# Build docker run command
 cmd = [
-    'docker','run','-d',
-    '-v','/var/run/docker.sock:/var/run/docker.sock',
-    '-p',f'{port}:80',
-    '-v',f'{base_vol}:/a0:ro',
-    '-v',f'{clone_vol}:/a0/usr',
-    '-v',f'{log_vol}:/a0/logs',
-    '-v',f'{tmp_vol}:/a0/tmp',
-    '-v',f'{heartbeat_vol}:/heartbeat',
-    '-v','hive_secrets:/a0/usr/.secrets',
-    '-e',f'A0_SET_agent_memory_subdir={mem}',
-    '-e',f'A0_CLONE_NAME={mem}',
-    '-e',f'A0_CLONE_PORT={port}',
-    '-e',f'A0_CLONE_MEMORY_SUBDIR={mem}',
-    '-e','A0_PARENT_UUID=unknown',
-    '--name',name,
+    'docker', 'run', '-d',
+    '-v', '/var/run/docker.sock:/var/run/docker.sock',
+    '-p', f'{port}:80',
+    '-v', f'{base_vol}:/a0:ro',
+    '-v', f'{clone_vol}:/a0/usr',
+    '-v', f'{log_vol}:/a0/logs',
+    '-v', f'{tmp_vol}:/a0/tmp',
+    '-v', f'{heartbeat_vol}:/heartbeat',
+    '-v', 'hive_secrets:/a0/usr/.secrets',
+    '-e', f'A0_SET_agent_memory_subdir={mem}',
+    '-e', f'A0_CLONE_NAME={mem}',
+    '-e', f'A0_CLONE_PORT={port}',
+    '-e', f'A0_CLONE_MEMORY_SUBDIR={mem}',
+    '-e', 'A0_PARENT_UUID=unknown',
+    '--name', name,
     image
 ]
+
+# Inject OpenRouter API key for this clone
+print('Generating OpenRouter API key...')
+new_key, key_id = create_openrouter_key(name)
+if new_key and key_id:
+    cmd.extend(['-e', f'OPENROUTER_API_KEY={new_key}'])
+    store_clone_key_in_registry(name, key_id)
+else:
+    print('WARNING: Failed to generate OpenRouter API key; clone will use parent key if available')
 
 # Inject observability environment
 if parent_obs_url:
@@ -149,7 +212,7 @@ try:
 except Exception as e:
     print(f'WARNING: Could not load parent A2A settings: {e}')
 
-print('Running:',' '.join(cmd))
+print('Running:', ' '.join(cmd))
 res = subprocess.run(cmd, capture_output=True, text=True)
 if res.returncode != 0:
     print('Launch failed:', res.stderr)

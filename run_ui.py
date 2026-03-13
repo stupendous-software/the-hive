@@ -1,4 +1,3 @@
-import sys; sys.path.insert(0, "/a0")
 from datetime import timedelta
 import os
 import secrets
@@ -19,7 +18,6 @@ from werkzeug.wrappers.request import Request as WerkzeugRequest
 import initialize
 from python.helpers import files, git, mcp_server, fasta2a_server, settings as settings_helper
 from python.helpers.files import get_abs_path
-from datetime import timedelta
 from python.helpers import runtime, dotenv, process
 from python.helpers.websocket import WebSocketHandler, validate_ws_origin
 from python.helpers.extract_tools import load_classes_from_folder
@@ -477,8 +475,6 @@ def run():
         routes=[
             Mount("/mcp", app=mcp_server.DynamicMcpProxy.get_instance()),
             Mount("/a2a", app=fasta2a_server.DynamicA2AProxy.get_instance()),
-            Mount("/.well-known", app=fasta2a_server.DynamicA2AProxy.get_instance()),
-            Mount("/.well-known", app=fasta2a_server.DynamicA2AProxy.get_instance()),
             Mount("/", app=wsgi_app),
         ]
     )
@@ -533,8 +529,6 @@ def run():
 def wait_for_health(host: str, port: int):
     url = f"http://{host}:{port}/health"
     while True:
-        if not url.startswith(("http://", "https://")):
-            raise ValueError("Only http/https URLs allowed")
         try:
             with urllib.request.urlopen(url, timeout=2) as resp:
                 if resp.status == 200:
@@ -542,7 +536,10 @@ def wait_for_health(host: str, port: int):
                     return
         except Exception:
             pass
-        time.sleep(1)def init_a0():
+        time.sleep(1)
+
+
+def init_a0():
     # initialize contexts and MCP
     init_chats = initialize.initialize_chats()
     # only wait for init chats, otherwise they would seem to disappear for a while on restart
@@ -560,5 +557,3 @@ if __name__ == "__main__":
     runtime.initialize()
     dotenv.load_dotenv()
     run()
-
-

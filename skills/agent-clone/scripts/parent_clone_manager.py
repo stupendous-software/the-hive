@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import requests
 import os
 import time
 import subprocess
@@ -91,11 +92,13 @@ def update_registry_from_heartbeats():
         cid = data.get('container_id')
         if not cid:
             continue
+        existing = CLONE_REGISTRY.get(cid, {})
         CLONE_REGISTRY[cid] = {
             'name': data.get('memory_subdir', cid),
             'port': data.get('port'),
             'last_seen': data.get('timestamp'),
             'container_id': cid,
+            'openrouter_key_id': existing.get('openrouter_key_id')
         }
 
 
@@ -130,9 +133,16 @@ def get_over_limit_clones():
 
 def shutdown_clone(container_id: str, reason: str):
     try:
-        name = CLONE_REGISTRY.get(container_id, {}).get('name', container_id)
+        info = CLONE_REGISTRY.get(container_id, {})
+        name = info.get('name', container_id)
         print(f'[ParentManager] Shutting down clone {name} ({container_id[:12]}): {reason}')
         subprocess.run(['docker', 'rm', '-f', container_id], capture_output=True, timeout=30)
+        # Revoke OpenRouter key if present
+        key_info = info.get('openrouter_key_id')
+        if key_info:
+            mgmt_key = get_management_key()
+            if mgmt_key:
+                revoke_openrouter_key(key_info, mgmt_key)
         CLONE_REGISTRY.pop(container_id, None)
     except Exception as e:
         print(f'[ParentManager] Error shutting down {container_id}: {e}')
@@ -144,6 +154,41 @@ def persist_registry():
             json.dump(CLONE_REGISTRY, f, indent=2, default=str)
     except Exception as e:
         print(f'[ParentManager] Failed to persist registry: {e}')
+
+
+
+def revoke_openrouter_key(key_id, management_key):
+    """Revoke an OpenRouter API key."""
+    url = f"https://openrouter.ai/api/v1/keys/{key_id}"
+    try:
+        resp = requests.delete(url, headers={
+            'Authorization': f'Bearer {management_key}',
+            'Content-Type': 'application/json'
+        }, timeout=30)
+        if resp.status_code in (200, 204):
+            print(f'[OpenRouter] Revoked key {key_id[:8]}...')
+            return True
+        else:
+            print(f'[OpenRouter] Failed to revoke key {key_id[:8]}...: {resp.status_code} {resp.text}')
+            return False
+    except Exception as e:
+        print(f'[OpenRouter] Error revoking key {key_id[:8]}...: {e}')
+        return False
+
+
+def get_management_key():
+    """Load management key from parent secrets."""
+    try:
+        with open('/a0/usr/.secrets') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    k, v = line.split('=', 1)
+                    if k == 'OPENROUTER_MANAGEMENT_KEY':
+                        return v
+    except Exception as e:
+        print(f'[OpenRouter] Could not load management key: {e}')
+        return None
 
 
 def main_loop():
