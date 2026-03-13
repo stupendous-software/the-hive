@@ -16,6 +16,7 @@ RUN /opt/venv-a0/bin/pip install --no-cache-dir nest-asyncio
 # Upgrade vulnerable dependencies to patched versions (CVE fixes)
 RUN /opt/venv-a0/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
     /opt/venv-a0/bin/pip install --no-cache-dir \
+      'fastapi' \
       'nltk>=3.9.3' \
       'unstructured[all-docs]>=0.18.18' \
       'langchain>=0.2.16,<0.3.0' \
