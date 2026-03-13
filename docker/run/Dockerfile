@@ -18,7 +18,9 @@ RUN /opt/venv-a0/bin/pip install --no-cache-dir --upgrade pip setuptools wheel &
     /opt/venv-a0/bin/pip install --no-cache-dir \
       'nltk>=3.9.3' \
       'unstructured[all-docs]>=0.18.18' \
-      'langchain-core>=0.3.81' \
+      'langchain>=0.2.16,<0.3.0' \
+      'langchain-core>=0.2.40,<0.3.0' \
+      'langchain-community>=0.2.0,<0.3.0 \
       'langchain-unstructured[all-docs]>=0.1.8' \
       'lxml_html_clean>=0.4.0' \
       'pillow>=12.1.1' \
